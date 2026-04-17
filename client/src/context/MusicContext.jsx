@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef } from 'react';
+import { createContext, useContext, useState, useRef, useEffect } from 'react';
 
 const MusicContext = createContext();
 
@@ -18,6 +18,15 @@ export const MusicProvider = ({ children }) => {
     const [progress, setProgress] = useState(0);
     const [duration, setDuration] = useState(0);
     const playerRef = useRef(null);
+
+    useEffect(() => {
+        if (currentVideo) {
+            const prefix = isPlaying ? '▶ ' : '';
+            document.title = `${prefix}${currentVideo.title} | MelodyVerse`;
+        } else {
+            document.title = 'MelodyVerse';
+        }
+    }, [currentVideo, isPlaying]);
 
     const playVideo = (video, videoList = []) => {
         setCurrentVideo(video);
