@@ -232,8 +232,19 @@ const MoodCamera = () => {
             {isOpen && (
                 <div className="modern-auth-overlay" onClick={() => setIsOpen(false)}>
                     <style>{`
+                        .modern-auth-overlay {
+                            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+                            display: flex; align-items: center; justify-content: center; z-index: 100000;
+                        }
+                        .modern-close-btn {
+                            width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1);
+                            border: none; color: white; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;
+                            cursor: pointer; transition: 0.2s;
+                        }
+                        .modern-close-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
+                        
                         .mood-split-container {
-                            display: flex; width: 950px; height: 600px;
+                            display: flex; width: 950px; height: 600px; max-width: 90vw; max-height: 90vh;
                             background: rgba(13, 13, 18, 0.95); border-radius: 24px;
                             border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
                             overflow: hidden; position: relative;
