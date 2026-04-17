@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import * as faceapi from 'face-api.js';
 import { FiCamera, FiX, FiPlay, FiRefreshCw } from 'react-icons/fi';
 import { useMusic } from '../context/MusicContext';
 import { searchMusic } from '../services/api';
@@ -70,6 +71,7 @@ const MoodCamera = () => {
     const [scanning, setScanning] = useState(false);
     const [moodSongs, setMoodSongs] = useState([]);
     const [countdown, setCountdown] = useState(null);
+    const [modelsLoaded, setModelsLoaded] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
 
@@ -96,20 +98,33 @@ const MoodCamera = () => {
     };
 
     useEffect(() => {
+        const loadModels = async () => {
+            try {
+                // Models are loaded locally from the public folder
+                await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+                await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+                setModelsLoaded(true);
+            } catch (error) {
+                console.error("Error loading face-api models:", error);
+                toast.error("Failed to load mood detection models.");
+            }
+        };
+
         if (isOpen) {
-            startCamera();
+            loadModels().then(() => startCamera());
         } else {
             stopCamera();
             setMood(null);
             setMoodSongs([]);
             setScanning(false);
+            setModelsLoaded(false);
         }
         return () => stopCamera();
     }, [isOpen]);
 
-    // Analyze the video frame for mood detection using pixel analysis
+    // Analyze the video frame for mood detection using face-api.js
     const analyzeMood = useCallback(async () => {
-        if (!videoRef.current || !canvasRef.current) return;
+        if (!videoRef.current || !modelsLoaded) return;
 
         setScanning(true);
         setCountdown(3);
@@ -121,101 +136,53 @@ const MoodCamera = () => {
         }
         setCountdown(null);
 
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        canvas.width = video.videoWidth || 400;
-        canvas.height = video.videoHeight || 300;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Analyze the face region (center of frame)
-        const faceX = Math.floor(canvas.width * 0.25);
-        const faceY = Math.floor(canvas.height * 0.15);
-        const faceW = Math.floor(canvas.width * 0.5);
-        const faceH = Math.floor(canvas.height * 0.7);
-
-        const imageData = ctx.getImageData(faceX, faceY, faceW, faceH);
-        const pixels = imageData.data;
-
-        // Calculate average color values and brightness
-        let totalR = 0, totalG = 0, totalB = 0;
-        let brightPixels = 0;
-        let darkPixels = 0;
-        let warmPixels = 0;
-        let coolPixels = 0;
-        const pixelCount = pixels.length / 4;
-
-        for (let i = 0; i < pixels.length; i += 4) {
-            const r = pixels[i];
-            const g = pixels[i + 1];
-            const b = pixels[i + 2];
-            totalR += r;
-            totalG += g;
-            totalB += b;
-
-            const brightness = (r + g + b) / 3;
-            if (brightness > 160) brightPixels++;
-            if (brightness < 80) darkPixels++;
-            if (r > b + 30) warmPixels++;
-            if (b > r + 30) coolPixels++;
-        }
-
-        const avgR = totalR / pixelCount;
-        const avgG = totalG / pixelCount;
-        const avgB = totalB / pixelCount;
-        const avgBrightness = (avgR + avgG + avgB) / 3;
-        const brightRatio = brightPixels / pixelCount;
-        const darkRatio = darkPixels / pixelCount;
-        const warmRatio = warmPixels / pixelCount;
-        const coolRatio = coolPixels / pixelCount;
-
-        // Enhanced mood detection based on visual factors
-        // Also adds some randomness to make it feel more dynamic
-        let detectedMood;
-        const rand = Math.random();
-
-        if (avgBrightness > 140 && warmRatio > 0.3) {
-            // Bright and warm - likely smiling/happy
-            detectedMood = rand > 0.3 ? 'happy' : 'romantic';
-        } else if (avgBrightness > 130 && brightRatio > 0.4) {
-            // Very bright - surprised or excited
-            detectedMood = rand > 0.4 ? 'surprised' : 'happy';
-        } else if (darkRatio > 0.4 && coolRatio > 0.3) {
-            // Dark and cool tones - sad
-            detectedMood = rand > 0.3 ? 'sad' : 'fearful';
-        } else if (warmRatio > 0.45 && avgR > avgB + 40) {
-            // Very warm/red tones - angry or intense
-            detectedMood = rand > 0.5 ? 'angry' : 'surprised';
-        } else if (coolRatio > 0.35) {
-            // Cool tones  
-            detectedMood = rand > 0.4 ? 'neutral' : 'sad';
-        } else if (avgBrightness > 120) {
-            detectedMood = rand > 0.3 ? 'neutral' : 'happy';
-        } else {
-            detectedMood = rand > 0.5 ? 'neutral' : 'sad';
-        }
-
-        setMood(detectedMood);
-        setScanning(false);
-
-        // Speak the result
-        const moodData = MOODS[detectedMood];
-        const utterance = new SpeechSynthesisUtterance(
-            `I can see you're feeling ${moodData.label}. ${moodData.suggestion}`
-        );
-        utterance.rate = 1;
-        utterance.pitch = 1.1;
-        speechSynthesis.speak(utterance);
-
-        // Fetch mood-based songs
         try {
+            // Detect face and expressions
+            const detection = await faceapi.detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+            
+            let detectedMood = 'neutral';
+            
+            if (detection && detection.expressions) {
+                // Get highest probability expression
+                const expressions = detection.expressions;
+                const topExpression = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
+                
+                // Map face-api expressions to our custom MOODS
+                // face-api returns: neutral, happy, sad, angry, fearful, disgusted, surprised
+                if (topExpression === 'sad' || topExpression === 'fearful') {
+                    detectedMood = topExpression;
+                } else if (topExpression === 'disgusted') {
+                    detectedMood = 'disgusted';
+                } else if (topExpression === 'happy' || topExpression === 'surprised' || topExpression === 'angry') {
+                    detectedMood = topExpression;
+                }
+            } else {
+                toast.error("Couldn't clearly detect a face. Defaulting to neutral.");
+            }
+
+            setMood(detectedMood);
+            setScanning(false);
+
+            // Speak the result
+            const moodData = MOODS[detectedMood];
+            const utterance = new SpeechSynthesisUtterance(
+                `I can see you're feeling ${Object.values(detection?.expressions || {}).some(val => val > 0.5) ? detectedMood : 'neutral'}. ${moodData.suggestion}`
+            );
+            utterance.rate = 1;
+            utterance.pitch = 1.1;
+            speechSynthesis.speak(utterance);
+
+            // Fetch mood-based songs
             const randomQuery = moodData.queries[Math.floor(Math.random() * moodData.queries.length)];
             const res = await searchMusic(randomQuery);
             setMoodSongs(res.data.videos || []);
-        } catch (e) {
-            console.error('Failed to fetch mood songs');
+
+        } catch (error) {
+            console.error("Face detection failed:", error);
+            setScanning(false);
+            toast.error("Detection failed.");
         }
-    }, []);
+    }, [modelsLoaded]);
 
     const playMoodMusic = () => {
         if (moodSongs.length > 0) {

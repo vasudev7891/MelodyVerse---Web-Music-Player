@@ -51,4 +51,7 @@ export const adminGetUsers = () => API.get('/admin/users');
 export const adminDeleteUser = (id) => API.delete(`/admin/users/${id}`);
 export const adminUpdateUserRole = (id, data) => API.put(`/admin/users/${id}/role`, data);
 
+// AI
+export const queryAIAssistant = (message) => API.post('/ai/chat', { message });
+
 export default API;

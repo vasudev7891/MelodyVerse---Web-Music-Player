@@ -2,30 +2,17 @@ import { useState, useRef, useEffect } from 'react';
 import { FiMic, FiMicOff, FiMessageCircle, FiX, FiSend, FiMusic } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useMusic } from '../context/MusicContext';
-import { searchMusic } from '../services/api';
-
-const AI_RESPONSES = {
-    greetings: [
-        "Hey there! 🎵 I'm MelodyBot, your music assistant! Ask me to play any song, recommend music, or help you navigate MelodyVerse!",
-        "Welcome to MelodyVerse! 🎧 I can help you find songs, discover artists, or play music. What are you in the mood for?",
-        "Hi! 🎶 I'm your AI music buddy! Tell me what you want to listen to and I'll find it for you!"
-    ],
-    play: "🎵 Searching for that song now! Give me a moment...",
-    recommend_bollywood: "🎬 Here are some Bollywood gems I'd recommend:\n• Tum Hi Ho - Arijit Singh\n• Lag Ja Gale - Lata Mangeshkar\n• Kal Ho Na Ho - Sonu Nigam\n• Chaiyya Chaiyya - Sukhwinder Singh\nWould you like me to play any of these?",
-    recommend_english: "🎤 Here are some English classics:\n• Bohemian Rhapsody - Queen\n• Thriller - Michael Jackson\n• Shape of You - Ed Sheeran\n• Blinding Lights - The Weeknd\nShall I play one?",
-    recommend_classical: "🎵 For Indian Classical, try:\n• Raag Yaman by Pandit Ravi Shankar\n• Raag Bhairavi by Ustad Bismillah Khan\n• Classical vocal by Lata Mangeshkar\nWant me to search for these?",
-    help: "I can help you with:\n🎵 **Play a song** - Say 'play [song name]'\n🔍 **Search** - Say 'search [anything]'\n⭐ **Artists** - Say 'show artists' or 'who is [artist]'\n🎬 **Genres** - Say 'play bollywood' or 'play rock'\n❤️ **Favorites** - Say 'my favorites'\n📋 **Playlists** - Say 'my playlists'\nJust type or speak your request!",
-    unknown: "I'm not sure I understood that. Try saying 'play [song]', 'recommend bollywood', or 'help' to see what I can do! 🎵",
-};
+import { searchMusic, queryAIAssistant } from '../services/api';
 
 const AIAssistant = () => {
     const { showAIAssistant: isOpen, setShowAIAssistant: setIsOpen, playVideo } = useMusic();
     const [messages, setMessages] = useState([
-        { role: 'ai', text: AI_RESPONSES.greetings[0], timestamp: new Date() }
+        { role: 'ai', text: "Hey there! 🎵 I'm MelodyBot, powered by Gemini AI! Ask me to play any song, recommend music, or help you navigate MelodyVerse!", timestamp: new Date() }
     ]);
     const [input, setInput] = useState('');
     const [isListening, setIsListening] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const [isThinking, setIsThinking] = useState(false);
     const messagesEndRef = useRef(null);
     const recognitionRef = useRef(null);
     const navigate = useNavigate();
@@ -83,92 +70,43 @@ const AIAssistant = () => {
     };
 
     const processMessage = async (text) => {
-        const lower = text.toLowerCase().trim();
+        setIsThinking(true);
+        try {
+            const res = await queryAIAssistant(text);
+            const { success, response } = res.data;
+            
+            if (success && response) {
+                const { speakResponse, action, query } = response;
+                
+                addAIMessage(speakResponse);
+                speak(speakResponse);
 
-        // Play song
-        if (lower.startsWith('play ') || lower.startsWith('search ')) {
-            const query = text.replace(/^(play|search)\s+/i, '').trim();
-            addAIMessage(`🎵 Searching for "${query}"...`);
-            try {
-                const res = await searchMusic(query);
-                const videos = res.data.videos || [];
-                if (videos.length > 0) {
-                    playVideo(videos[0], videos);
-                    const reply = `🎵 Now playing: **${videos[0].title}**\nI found ${videos.length} results. Enjoy the music!`;
-                    addAIMessage(reply);
-                    speak(`Now playing ${videos[0].title}`);
-                } else {
-                    addAIMessage("Couldn't find that song. Try a different search term.");
+                // Execute Actions Contextually
+                if (action === 'PLAY_SONG' && query) {
+                    try {
+                        const searchRes = await searchMusic(query);
+                        const videos = searchRes.data.videos || [];
+                        if (videos.length > 0) {
+                            playVideo(videos[0], videos);
+                        }
+                    } catch (err) {
+                        console.error('Failed to auto-play after AI command:', err);
+                    }
+                } else if (action === 'NAVIGATE' && query) {
+                    navigate(query.startsWith('/') ? query : `/${query}`);
                 }
-            } catch (e) {
-                addAIMessage("Sorry, I couldn't search right now. Please try again.");
-            }
-            return;
-        }
 
-        // Recommendations
-        if (lower.includes('recommend') || lower.includes('suggest')) {
-            if (lower.includes('bollywood') || lower.includes('hindi') || lower.includes('indian')) {
-                addAIMessage(AI_RESPONSES.recommend_bollywood);
-                speak("Here are some Bollywood gems I'd recommend");
-            } else if (lower.includes('english') || lower.includes('pop') || lower.includes('western')) {
-                addAIMessage(AI_RESPONSES.recommend_english);
-                speak("Here are some English classics");
-            } else if (lower.includes('classical')) {
-                addAIMessage(AI_RESPONSES.recommend_classical);
-                speak("For Indian Classical, here are my recommendations");
             } else {
-                addAIMessage("What type of music? Try 'recommend bollywood', 'recommend english', or 'recommend classical'!");
-                speak("What type of music would you like me to recommend?");
+                throw new Error("Invalid response from internal AI logic");
             }
-            return;
+        } catch (error) {
+            console.error(error);
+            const fallbackMsg = "Sorry, I'm having trouble connecting to my Gemini brain right now. Please try again later. 🔌";
+            addAIMessage(fallbackMsg);
+            speak(fallbackMsg);
+        } finally {
+            setIsThinking(false);
         }
-
-        // Navigation
-        if (lower.includes('home')) { navigate('/'); addAIMessage("Taking you home! 🏠"); return; }
-        if (lower.includes('artist')) { navigate('/artists'); addAIMessage("Here are all the legendary artists! ⭐"); return; }
-        if (lower.includes('favorite')) { navigate('/favorites'); addAIMessage("Here are your favorites! ❤️"); return; }
-        if (lower.includes('playlist')) { navigate('/playlists'); addAIMessage("Here are your playlists! 📋"); return; }
-
-        // Genre navigation
-        const genres = ['bollywood', 'rock', 'pop', 'hip hop', 'classical', 'sufi', 'edm', 'lo-fi', 'jazz', 'country'];
-        for (const genre of genres) {
-            if (lower.includes(genre)) {
-                navigate(`/category/${encodeURIComponent(genre.charAt(0).toUpperCase() + genre.slice(1))}`);
-                addAIMessage(`🎵 Showing ${genre} music for you!`);
-                speak(`Showing ${genre} music for you`);
-                return;
-            }
-        }
-
-        // Greetings
-        if (['hi', 'hello', 'hey', 'help', 'what can you do'].some(g => lower.includes(g))) {
-            const response = lower.includes('help') || lower.includes('what') ? AI_RESPONSES.help : AI_RESPONSES.greetings[Math.floor(Math.random() * AI_RESPONSES.greetings.length)];
-            addAIMessage(response);
-            speak(lower.includes('help') ? "I can help you play songs, search music, browse artists and genres, and manage your favorites and playlists!" : "Hi there! I'm your music assistant. How can I help?");
-            return;
-        }
-
-        // Who is
-        if (lower.startsWith('who is') || lower.startsWith('tell me about')) {
-            const name = text.replace(/^(who is|tell me about)\s+/i, '').trim();
-            addAIMessage(`Let me search for ${name}...`);
-            try {
-                const res = await searchMusic(`${name} songs music`);
-                const videos = res.data.videos || [];
-                if (videos.length > 0) {
-                    addAIMessage(`🎤 **${name}** is a legendary artist! I found ${videos.length} songs. Would you like me to play "${videos[0].title}"?`);
-                    speak(`${name} is a legendary artist. I found several songs. Would you like me to play one?`);
-                }
-            } catch (e) {
-                addAIMessage(`Sorry, I couldn't find info about ${name}.`);
-            }
-            return;
-        }
-
-        // Default
-        addAIMessage(AI_RESPONSES.unknown);
-        speak("I'm not sure about that. Try saying play followed by a song name, or ask for recommendations!");
     };
 
     const addAIMessage = (text) => {

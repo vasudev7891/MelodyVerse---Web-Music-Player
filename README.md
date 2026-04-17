@@ -4,11 +4,12 @@ MelodyVerse is a full-stack, responsive music streaming web application. It feat
 
 ## 🚀 Features
 
+- **MelodyBot AI Assistant:** A sophisticated voice-activated chatbot powered by the Google Gemini AI API, capable of taking natural language commands to auto-play songs, navigate the app, and recommend dynamic playlists.
+- **Deep-Learning Mood Camera:** Uses the `face-api.js` SDK running an offline Neural Network in your browser to accurately detect your facial expressions (Happy, Sad, Angry, etc.) and auto-play music to match your mood—with 100% privacy!
 - **Dynamic Search:** Live search suggestions and seamless music querying using the YouTube API.
 - **Custom Player:** Beautiful persistent music player with play/pause, progress tracking, and volume controls.
 - **Authentication:** Secure user registration, login, and profile management with JWT.
-- **Admin Dashboard:** Specific roles for managing platform data.
-- **Modern UI:** Built with React, Vite, and detailed CSS for a premium aesthetic and glassmorphism design.
+- **Premium UI:** Built with React, Vite, and detailed CSS for a premium glassmorphic aesthetic.
 
 ## 🛠 Tech Stack
 
@@ -31,7 +32,8 @@ The code is located in the `/melodyverse` folder, which contains both the fronte
 
 - [Node.js](https://nodejs.org/) (v16+)
 - [MongoDB](https://www.mongodb.com/) (Local instance running horizontally or MongoDB Atlas URI)
-- A YouTube Data API v3 Key.
+- A **YouTube Data API v3 Key** (for fast music searching).
+- A **Google Gemini API Key** (for powering the AI Chatbot backend).
 
 ### Installation
 
@@ -54,7 +56,7 @@ The code is located in the `/melodyverse` folder, which contains both the fronte
    cd server
    cp .env.example .env
    ```
-   **Update the `.env` variables** with your active MongoDB URI, JWT Secret, and YouTube API Key.
+   **Update the `.env` variables** with your active MongoDB URI, JWT Secret, YouTube API Key, and your Gemini API Key (`GEMINI_API_KEY`).
 
 ### Running the Application Locally
 

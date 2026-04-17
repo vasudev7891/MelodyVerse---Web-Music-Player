@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const musicRoutes = require('./routes/music');
 const adminRoutes = require('./routes/admin');
 const publicRoutes = require('./routes/public');
+const aiRoutes = require('./routes/ai');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/music', musicRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/ai', aiRoutes);
 
 // SERVE STATIC ASSETS & SPA ROUTING (Only in Production mode)
 // Note: This must come AFTER API routes
