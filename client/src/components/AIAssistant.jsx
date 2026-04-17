@@ -158,6 +158,17 @@ const AIAssistant = () => {
                                 </div>
                             </div>
                         ))}
+                        
+                        {isThinking && (
+                            <div className="ai-message ai">
+                                <div className="ai-msg-avatar">🤖</div>
+                                <div className="ai-msg-bubble ai-thinking" style={{ display: 'flex', gap: '5px', alignItems: 'center', padding: '12px 20px' }}>
+                                    <div className="thinking-dot"></div>
+                                    <div className="thinking-dot"></div>
+                                    <div className="thinking-dot"></div>
+                                </div>
+                            </div>
+                        )}
                         <div ref={messagesEndRef} />
                     </div>
 

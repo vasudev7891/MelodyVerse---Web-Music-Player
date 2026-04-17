@@ -122,6 +122,13 @@ const MoodCamera = () => {
         return () => stopCamera();
     }, [isOpen]);
 
+    // Re-attach stream whenever the video element re-mounts (e.g., after clicking Rescan)
+    useEffect(() => {
+        if (stream && videoRef.current && !mood) {
+            videoRef.current.srcObject = stream;
+        }
+    }, [stream, mood]);
+
     // Analyze the video frame for mood detection using face-api.js
     const analyzeMood = useCallback(async () => {
         if (!videoRef.current || !modelsLoaded) return;
@@ -139,14 +146,14 @@ const MoodCamera = () => {
         try {
             // Detect face and expressions
             const detection = await faceapi.detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
-            
+
             let detectedMood = 'neutral';
-            
+
             if (detection && detection.expressions) {
                 // Get highest probability expression
                 const expressions = detection.expressions;
                 const topExpression = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
-                
+
                 // Map face-api expressions to our custom MOODS
                 // face-api returns: neutral, happy, sad, angry, fearful, disgusted, surprised
                 if (topExpression === 'sad' || topExpression === 'fearful') {
@@ -219,7 +226,7 @@ const MoodCamera = () => {
                         }
                         
                         .mood-info-side {
-                            flex: 0.8; background: linear-gradient(135deg, rgba(45, 52, 54, 0.9), rgba(9, 132, 227, 0.8)), url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop');
+                            flex: 0 0 380px; background: linear-gradient(135deg, rgba(45, 52, 54, 0.9), rgba(9, 132, 227, 0.8)), url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop');
                             background-size: cover; background-position: center; position: relative;
                             padding: 50px 40px; color: white; display: flex; flex-direction: column; justify-content: center;
                         }
@@ -229,8 +236,11 @@ const MoodCamera = () => {
                         .mood-info-content { position: relative; z-index: 10; }
                         
                         .mood-camera-side {
-                            flex: 1.2; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;
+                            flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; position: relative;
+                            overflow-y: auto; overflow-x: hidden;
                         }
+                        .mood-camera-side::-webkit-scrollbar { width: 6px; }
+                        .mood-camera-side::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
                         
                         .mood-instructions { margin-top: 30px; display: flex; flex-direction: column; gap: 20px; }
                         .mood-step { display: flex; gap: 15px; align-items: flex-start; }
@@ -274,10 +284,45 @@ const MoodCamera = () => {
                         
                         .spin-icon { animation: spin 1s linear infinite; }
                         @keyframes spin { to { transform: rotate(360deg); } }
+
+                        .neural-overlay {
+                            position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 30%, rgba(0, 206, 201, 0.1) 100%);
+                            z-index: 15; pointer-events: none;
+                        }
+
+                        .scanning-hud {
+                            position: absolute; inset: 0; border: 2px solid #00cec9; border-radius: 20px;
+                            box-shadow: inset 0 0 50px rgba(0, 206, 201, 0.2); z-index: 16; pointer-events: none;
+                            animation: hudPulse 2s infinite ease-in-out;
+                        }
+
+                        .scanning-grid {
+                            position: absolute; inset: 0; background-image: 
+                                linear-gradient(rgba(0, 206, 201, 0.1) 1px, transparent 1px),
+                                linear-gradient(90deg, rgba(0, 206, 201, 0.1) 1px, transparent 1px);
+                            background-size: 30px 30px; z-index: 12; opacity: 0.3; pointer-events: none;
+                        }
+
+                        .scanning-status-card {
+                            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+                            background: rgba(0,0,0,0.8); backdrop-filter: blur(12px); padding: 12px 24px;
+                            border-radius: 50px; border: 1px solid rgba(0, 206, 201, 0.5);
+                            display: flex; align-items: center; gap: 12px; z-index: 30;
+                            color: #00cec9; font-weight: 600; font-size: 0.9rem; letter-spacing: 0.5px;
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: max-content;
+                        }
+
+                        .thinking-dot {
+                            width: 8px; height: 8px; background: #00cec9; border-radius: 50%;
+                            animation: dotPulse 1.5s infinite ease-in-out;
+                        }
+
+                        @keyframes hudPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+                        @keyframes dotPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
                     `}</style>
-                    
+
                     <div className="mood-split-container" onClick={e => e.stopPropagation()}>
-                        
+
                         <div className="mood-info-side">
                             <div className="mood-info-content">
                                 <h2 style={{ fontFamily: 'Outfit', fontSize: '2.5rem', fontWeight: 900, marginBottom: '10px', background: 'linear-gradient(135deg, #74b9ff, #00cec9)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -286,7 +331,7 @@ const MoodCamera = () => {
                                 <p style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.8)', marginBottom: '30px' }}>
                                     Let our visual artificial intelligence curate the perfect playlist for your current emotional frequency.
                                 </p>
-                                
+
                                 <div className="mood-instructions">
                                     <div className="mood-step">
                                         <div className="mood-step-num">1</div>
@@ -299,7 +344,7 @@ const MoodCamera = () => {
                                         <div className="mood-step-num">2</div>
                                         <div className="mood-step-text">
                                             <h4>AI Scanning</h4>
-                                            <p>Our algorithm will scan 15+ facial vectors and color temperatures to detect your exact mood.</p>
+                                            <p>Our local neural network scans 68 facial landmarks to accurately detect your true micro-expressions.</p>
                                         </div>
                                     </div>
                                     <div className="mood-step">
@@ -312,32 +357,44 @@ const MoodCamera = () => {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="mood-camera-side">
                             <button className="modern-close-btn" style={{ position: 'absolute', top: 20, right: 20, zIndex: 100 }} onClick={() => setIsOpen(false)}>
                                 <FiX />
                             </button>
-                            
+
                             {!moodData ? (
                                 <>
                                     <div className="camera-frame">
-                                        <video ref={videoRef} autoPlay playsInline muted />
-                                        {scanning && <div className="scanner-line"></div>}
+                                        <video 
+                                            ref={videoRef} 
+                                            autoPlay 
+                                            playsInline 
+                                            muted 
+                                            style={{ filter: scanning ? 'blur(4px) grayscale(40%) contrast(1.2)' : 'none', transition: 'filter 0.5s ease' }} 
+                                        />
                                         
-                                        {countdown && (
-                                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', fontSize: '5rem', fontWeight: 900, textShadow: '0 0 30px #00cec9', zIndex: 20 }}>
-                                                {countdown}
-                                            </div>
+                                        {scanning && (
+                                            <>
+                                                <div className="scanning-grid" />
+                                                <div className="neural-overlay" />
+                                                <div className="scanning-hud" />
+                                                <div className="scanner-line" />
+                                                <div className="scanning-status-card">
+                                                    <div className="thinking-dot" />
+                                                    <span>{countdown ? `Identifying Pose... ${countdown}` : "Neural Vectors: Mapping Expressions..."}</span>
+                                                </div>
+                                            </>
                                         )}
                                     </div>
-                                    
-                                    <button 
-                                        className="modern-mood-btn" 
-                                        onClick={analyzeMood} 
+
+                                    <button
+                                        className="modern-mood-btn"
+                                        onClick={analyzeMood}
                                         disabled={scanning || !stream}
-                                        style={{ background: scanning ? 'rgba(255,255,255,0.1)' : '' }}
+                                        style={{ background: scanning ? 'rgba(0, 206, 201, 0.1)' : '', borderColor: scanning ? '#00cec9' : '' }}
                                     >
-                                        {scanning ? <><FiRefreshCw className="spin-icon" /> Analyzing Pixels...</> : <><FiCamera /> Initialize Scan</>}
+                                        {scanning ? <><FiRefreshCw className="spin-icon" /> Neural Processing...</> : <><FiCamera /> Initialize Scan</>}
                                     </button>
                                 </>
                             ) : (
@@ -347,7 +404,7 @@ const MoodCamera = () => {
                                         <h3 style={{ fontSize: '1.8rem', color: moodData.color, marginBottom: '5px' }}>{moodData.label}</h3>
                                         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem' }}>{moodData.suggestion}</p>
                                     </div>
-                                    
+
                                     {moodSongs.length > 0 && (
                                         <div style={{ marginTop: '20px' }}>
                                             <div style={{ fontSize: '0.85rem', color: '#a0a0b0', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>Curated Tracks</div>
@@ -365,7 +422,7 @@ const MoodCamera = () => {
                                             </div>
                                         </div>
                                     )}
-                                    
+
                                     <button className="modern-mood-btn" onClick={playMoodMusic} style={{ background: `linear-gradient(135deg, ${moodData.color}, ${moodData.color}dd)` }}>
                                         <FiPlay /> Launch Playlist
                                     </button>
