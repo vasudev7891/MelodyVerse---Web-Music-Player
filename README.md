@@ -17,7 +17,7 @@ MelodyVerse is a full-stack, responsive music streaming web application. It feat
 - **Backend:** Node.js, Express.js.
 - **Database:** MongoDB & Mongoose.
 - **Security:** JSON Web Tokens (JWT), bcrypt.
-- **External API:** YouTube v3 Search API.
+- **External API:** YouTube v3 Search API, Google Gemini API Key.
 
 ## 📁 Repository Structure
 
