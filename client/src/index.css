@@ -67,6 +67,7 @@ body {
   overflow: hidden;
   background: var(--bg-dark);
   position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .main-scroll {
@@ -91,9 +92,10 @@ body {
   flex-direction: column;
   padding: 30px 0px;
   z-index: 1000;
-  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              border 0.35s ease;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.3s ease,
+    border-color 0.3s ease;
   overflow-x: hidden;
   overflow-y: auto;
   position: relative;
@@ -122,7 +124,7 @@ body {
   overflow: hidden;
   white-space: nowrap;
   pointer-events: none;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar.collapsed .sidebar-item {
@@ -161,7 +163,7 @@ body {
   pointer-events: none;
   transition: opacity 0.2s ease;
   z-index: 1200;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .sidebar.collapsed .sidebar-item:hover::after {
@@ -179,8 +181,8 @@ body {
 .sidebar.closed .sidebar-header,
 .sidebar.closed .sidebar-section {
   opacity: 0;
-  transform: translateX(-20px);
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: translateX(-15px);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
 }
 
@@ -199,10 +201,10 @@ body {
 
 .sidebar-resize-handle:hover,
 .sidebar-resize-handle.active {
-  background: linear-gradient(180deg, 
-    rgba(108, 92, 231, 0.5),
-    rgba(253, 121, 168, 0.5),
-    rgba(108, 92, 231, 0.5));
+  background: linear-gradient(180deg,
+      rgba(108, 92, 231, 0.5),
+      rgba(253, 121, 168, 0.5),
+      rgba(108, 92, 231, 0.5));
   width: 4px;
   box-shadow: 0 0 8px rgba(108, 92, 231, 0.4);
 }
@@ -311,7 +313,8 @@ body {
 }
 
 /* Hide original logo and links in desktop if sidebar is present */
-.top-nav-logo, .top-nav-links {
+.top-nav-logo,
+.top-nav-links {
   display: none !important;
 }
 
@@ -366,7 +369,8 @@ body {
 
 /* ==================== EXPLORE DASHBOARD ==================== */
 .explore-dashboard {
-  padding: 80px 24px 40px; /* Reduced top and side padding for extended feel */
+  padding: 80px 24px 40px;
+  /* Reduced top and side padding for extended feel */
 }
 
 .explore-header {
@@ -396,14 +400,19 @@ body {
 .song-img,
 .artist-card-img,
 .fw-card-thumb img {
-  background: linear-gradient(90deg, rgba(30,30,40,1) 25%, rgba(50,50,65,1) 50%, rgba(30,30,40,1) 75%);
+  background: linear-gradient(90deg, rgba(30, 30, 40, 1) 25%, rgba(50, 50, 65, 1) 50%, rgba(30, 30, 40, 1) 75%);
   background-size: 200% 100%;
   animation: shimmerLoad 1.5s ease infinite;
 }
 
 @keyframes shimmerLoad {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* ==================== MODERN SONG CARD ==================== */
@@ -426,7 +435,7 @@ body {
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .song-img {
@@ -510,7 +519,8 @@ body {
   font-size: 18px;
 }
 
-.top-nav-btn:hover, .top-nav-btn.active {
+.top-nav-btn:hover,
+.top-nav-btn.active {
   background: var(--accent);
   color: white;
   border-color: var(--accent);
@@ -625,7 +635,8 @@ body {
 /* ==================== HOME / HERO ==================== */
 .fw-hero-premium {
   width: 100%;
-  height: 75vh; /* Increased from 65vh to extend downward */
+  height: 75vh;
+  /* Increased from 65vh to extend downward */
   min-height: 600px;
   background-size: cover;
   background-position: center;
@@ -640,7 +651,30 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(7, 7, 10, 1));
+  background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(7, 7, 10, 1));
+}
+
+.fw-hero-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(48px, 8vw, 84px);
+  font-weight: 900;
+  text-align: center;
+  line-height: 1;
+  background: linear-gradient(135deg, #fff 30%, rgba(255, 255, 255, 0.5));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 20px;
+  letter-spacing: -2px;
+}
+
+.fw-hero-subtitle {
+  font-size: clamp(16px, 2vw, 20px);
+  color: var(--text-dim);
+  text-align: center;
+  max-width: 600px;
+  line-height: 1.6;
+  margin-bottom: 40px;
 }
 
 .fw-hero-content-clean {
@@ -649,8 +683,18 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 32px;
-  margin-top: 8rem; /* Reduced from 15rem to move upward */
+  gap: 24px;
+  /* Reduced gap slightly for better density */
+  margin-top: 6rem;
+}
+
+.fw-hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  margin-top: 10px;
 }
 
 .premium-play-btn {
@@ -693,6 +737,183 @@ body {
   background: var(--bg-glass-hover);
   transform: translateY(-5px);
   border-color: var(--text-main);
+}
+
+/* ==================== FEATURE BAR ==================== */
+.feature-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 40px 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.feature-desc {
+  font-size: 11px;
+  color: var(--text-fade);
+}
+
+/* ==================== MOOD DISCOVERY ==================== */
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.mood-card {
+  height: 140px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  align-items: center;
+  padding: 30px;
+}
+
+.mood-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.mood-card-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  z-index: 2;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.mood-card-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, var(--mood-color), transparent 70%);
+  opacity: 0.15;
+  transition: 0.4s;
+}
+
+.mood-card:hover .mood-card-glow {
+  opacity: 0.3;
+}
+
+.mood-icon {
+  position: absolute;
+  right: -10px;
+  bottom: -10px;
+  font-size: 80px;
+  opacity: 0.1;
+  transform: rotate(-15deg);
+  transition: 0.4s;
+}
+
+.mood-card:hover .mood-icon {
+  opacity: 0.2;
+  transform: rotate(0deg) scale(1.1);
+}
+
+/* ==================== CINEMATIC SPOTLIGHT ==================== */
+.spotlight-section {
+  padding: 60px 24px;
+}
+
+.spotlight-banner {
+  width: 100%;
+  height: 400px;
+  border-radius: 30px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.spotlight-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: 0.5s;
+}
+
+.spotlight-banner:hover .spotlight-bg {
+  transform: scale(1.05);
+}
+
+.spotlight-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(7, 7, 10, 0.9) 30%, transparent 80%);
+  z-index: 1;
+}
+
+.spotlight-content {
+  position: relative;
+  z-index: 2;
+  padding: 60px;
+  max-width: 500px;
+}
+
+.spotlight-tag {
+  color: var(--accent-pink);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.spotlight-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 32px;
+  font-weight: 900;
+  margin-bottom: 16px;
+  color: white;
+}
+
+.spotlight-desc {
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 24px;
 }
 
 /* ==================== CONTENT SECTIONS ==================== */
@@ -825,7 +1046,7 @@ body {
   gap: 4px;
 }
 
-.fw-card-meta span + span::before {
+.fw-card-meta span+span::before {
   content: '•';
   margin-right: 4px;
   opacity: 0.5;
@@ -963,18 +1184,23 @@ body {
   right: 0;
   height: 1px;
   background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(108, 92, 231, 0.6) 20%,
-    rgba(253, 121, 168, 0.8) 50%,
-    rgba(108, 92, 231, 0.6) 80%,
-    transparent 100%);
+      transparent 0%,
+      rgba(108, 92, 231, 0.6) 20%,
+      rgba(253, 121, 168, 0.8) 50%,
+      rgba(108, 92, 231, 0.6) 80%,
+      transparent 100%);
   background-size: 200% 100%;
   animation: playerLineShimmer 4s linear infinite;
 }
 
 @keyframes playerLineShimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .sidebar-closed .music-player {
@@ -1027,8 +1253,17 @@ body {
 }
 
 @keyframes playerThumbPulse {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.04); }
+
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
 }
 
 .player-track-info-text {
@@ -1087,7 +1322,7 @@ body {
 .player-btn:hover {
   color: var(--text-main);
   transform: scale(1.15);
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .player-btn.play-pause {
@@ -1140,7 +1375,7 @@ body {
 .progress-bar {
   flex: 1;
   height: 4px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 4px;
   cursor: pointer;
   position: relative;
@@ -1170,7 +1405,7 @@ body {
   height: 13px;
   background: white;
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(108, 92, 231, 0.8), 0 0 0 2px rgba(108,92,231,0.4);
+  box-shadow: 0 0 8px rgba(108, 92, 231, 0.8), 0 0 0 2px rgba(108, 92, 231, 0.4);
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -1282,9 +1517,20 @@ body {
 }
 
 @keyframes toastFadeOut {
-  0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
-  65%  { opacity: 1; transform: translateX(-50%) translateY(-6px); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  65% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-6px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px);
+  }
 }
 
 
@@ -1385,7 +1631,7 @@ body {
 .artist-card-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent 70%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 70%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1400,7 +1646,7 @@ body {
   font-weight: 800;
   text-align: center;
   color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .artist-play-btn {
@@ -1494,12 +1740,10 @@ body {
   border-radius: 16px;
   /* Gradient border */
   padding: 2px;
-  background: linear-gradient(
-    135deg,
-    rgba(108, 92, 231, 0.6),
-    rgba(253, 121, 168, 0.4),
-    rgba(108, 92, 231, 0.6)
-  );
+  background: linear-gradient(135deg,
+      rgba(108, 92, 231, 0.6),
+      rgba(253, 121, 168, 0.4),
+      rgba(108, 92, 231, 0.6));
   background-size: 300% 300%;
   animation: videoBorderShimmer 6s ease infinite;
   box-shadow:
@@ -1511,9 +1755,17 @@ body {
 }
 
 @keyframes videoBorderShimmer {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* ---- Drag bar (title bar for moving) ---- */
@@ -1550,7 +1802,8 @@ body {
 .video-inner {
   position: relative;
   width: 100%;
-  height: calc(100% - 29px); /* subtract drag bar height */
+  height: calc(100% - 29px);
+  /* subtract drag bar height */
   border-radius: 0 0 14px 14px;
   overflow: hidden;
   background: #000;
@@ -1582,33 +1835,33 @@ body {
   border-radius: 14px;
 }
 
-/* ---- Resize handle (top-left corner) ---- */
+/* ---- Resize handle (bottom-right corner) ---- */
 .video-resize-handle {
   position: absolute;
-  top: -2px;
-  left: -2px;
-  width: 22px;
-  height: 22px;
+  bottom: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
   cursor: nwse-resize;
   z-index: 102;
   background: none;
-  border-top-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
 .video-resize-handle::before {
   content: '';
   position: absolute;
-  top: 6px;
-  left: 6px;
+  bottom: 8px;
+  right: 8px;
   width: 10px;
   height: 10px;
-  border-top: 2px solid rgba(255,255,255,0.5);
-  border-left: 2px solid rgba(255,255,255,0.5);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+  border-right: 2px solid rgba(255, 255, 255, 0.5);
   transition: 0.2s;
 }
 
 .video-resize-handle:hover::before {
-  border-color: rgba(108, 92, 231, 0.9);
+  border-color: var(--accent);
 }
 
 /* ---- Close & minimize buttons ---- */
@@ -1627,9 +1880,9 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 101;
-  transition: all 0.2s ease;
-  font-size: 14px;
+  z-index: 2005;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 15px;
 }
 
 .video-close-btn:hover {
@@ -1649,8 +1902,14 @@ body {
   cursor: pointer;
   border-radius: 14px;
 }
-.seek-overlay.backward { left: 2px; }
-.seek-overlay.forward  { right: 2px; }
+
+.seek-overlay.backward {
+  left: 2px;
+}
+
+.seek-overlay.forward {
+  right: 2px;
+}
 
 .seek-feedback {
   position: absolute;
@@ -1669,14 +1928,27 @@ body {
   z-index: 60;
   animation: fadeOutFeedback 0.8s ease forwards;
   pointer-events: none;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
-.seek-feedback.backward-fb { left: 12%; }
-.seek-feedback.forward-fb  { right: 12%; }
+
+.seek-feedback.backward-fb {
+  left: 12%;
+}
+
+.seek-feedback.forward-fb {
+  right: 12%;
+}
 
 @keyframes fadeOutFeedback {
-  0% { opacity: 1; transform: translateY(-50%) scale(1); }
-  100% { opacity: 0; transform: translateY(-50%) scale(1.4); }
+  0% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-50%) scale(1.4);
+  }
 }
 
 /* ---- Top control bar (settings, theater, fullscreen) ---- */
@@ -1687,15 +1959,15 @@ body {
   transform: translateX(-50%);
   display: flex;
   gap: 10px;
-  z-index: 101;
-  padding: 6px 12px;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 2005;
+  padding: 8px 16px;
+  background: rgba(13, 13, 20, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .video-inner:hover .video-controls-top {
@@ -1735,6 +2007,7 @@ body {
 .quality-dropdown {
   position: absolute;
   top: 42px;
+  /* Default for miniplayer */
   right: 0;
   background: rgba(13, 13, 20, 0.95);
   backdrop-filter: blur(24px);
@@ -1746,6 +2019,14 @@ body {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
   animation: slideTop 0.25s ease;
   z-index: 110;
+}
+
+/* In large modes, the control bar is at the bottom of the screen, so menu should go UP */
+.youtube-embed-container.theater-mode .quality-dropdown,
+.youtube-embed-container:fullscreen .quality-dropdown {
+  top: auto;
+  bottom: calc(100% + 12px);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.6);
 }
 
 .quality-title {
@@ -1781,8 +2062,15 @@ body {
 }
 
 @keyframes slideTop {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ---- Theater mode — fills main content area ---- */
@@ -1797,14 +2085,50 @@ body {
   aspect-ratio: auto;
   border-radius: 20px;
   padding: 3px;
-  z-index: 1800;
+  z-index: 3000;
   box-shadow:
-    0 12px 48px rgba(108, 92, 231, 0.3),
-    0 30px 80px rgba(0, 0, 0, 0.6);
+    0 0 0 1px rgba(108, 92, 231, 0.2),
+    0 20px 80px rgba(0, 0, 0, 0.8);
 }
 
 .youtube-embed-container.theater-mode iframe {
   border-radius: 18px;
+}
+
+/* ---- Native Fullscreen Styles ---- */
+.youtube-embed-container:fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: black !important;
+  overflow: hidden !important;
+  z-index: 99999 !important;
+  border: none !important;
+}
+
+.youtube-embed-container:fullscreen .video-inner {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.youtube-embed-container:fullscreen iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  transform: none !important;
+}
+
+.youtube-embed-container:fullscreen .video-controls-top {
+  bottom: 24px;
+}
+
+.youtube-embed-container:fullscreen .video-drag-bar {
+  display: none;
 }
 
 @media (max-width: 1024px) {
@@ -1855,7 +2179,7 @@ body {
     z-index: 3000;
     transform: translateX(0);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
     background: #0d0d12 !important;
     display: flex !important;
   }
@@ -1951,7 +2275,8 @@ body {
     font-size: 26px;
   }
 
-  .songs-grid, .artists-grid {
+  .songs-grid,
+  .artists-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 12px !important;
   }
@@ -1974,7 +2299,8 @@ body {
     padding: 0 15px;
   }
 
-  .premium-play-btn, .premium-outline-btn {
+  .premium-play-btn,
+  .premium-outline-btn {
     padding: 10px 20px;
     font-size: 12px;
   }
@@ -1982,7 +2308,7 @@ body {
   .sidebar-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
     z-index: 2999;
     display: block;
@@ -1990,10 +2316,12 @@ body {
 }
 
 @media (max-width: 480px) {
-  .songs-grid, .artists-grid {
+
+  .songs-grid,
+  .artists-grid {
     grid-template-columns: 1fr !important;
   }
-  
+
   .player-track-info {
     max-width: 150px;
   }

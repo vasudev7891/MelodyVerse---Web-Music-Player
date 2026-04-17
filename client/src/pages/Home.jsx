@@ -1,10 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPlay, FiChevronRight, FiChevronLeft, FiEye } from 'react-icons/fi';
+import { FiPlay, FiChevronRight, FiChevronLeft, FiEye, FiHeadphones, FiGlobe, FiStar, FiZap, FiMusic, FiActivity, FiSmile, FiCoffee, FiTrendingUp } from 'react-icons/fi';
 import SongCard from '../components/SongCard';
 import { getFeaturedArtists, getCategories, getTrending, searchMusic } from '../services/api';
 import { useMusic } from '../context/MusicContext';
 import { LEGENDARY_ARTISTS, INDIAN_LEGENDS, MODERN_STARS, INTERNATIONAL_ICONS } from '../constants/artists';
+
+const MOODS = [
+    { name: 'Chill & Relax', color: '#6c5ce7', icon: <FiCoffee />, query: 'low fi chill study beats' },
+    { name: 'High Energy', color: '#fd79a8', icon: <FiZap />, query: 'high energy workout music' },
+    { name: 'Deep Focus', color: '#00cec9', icon: <FiActivity />, query: 'deep focus ambient music' },
+    { name: 'Night Vibe', color: '#a29bfe', icon: <FiMusic />, query: 'synthwave night driving music' },
+];
 
 const HERO_ARTISTS_LEFT = [
     { name: 'Lata Mangeshkar', img: 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Lata-Mangeshkar.jpg' },
@@ -55,7 +62,8 @@ const Home = () => {
                 setTrendingVideos(trendRes.data.videos || []);
             } catch (e) {
                 try {
-                    const fallback = await searchMusic('trending music 2024');
+                    const currentYear = new Date().getFullYear();
+                    const fallback = await searchMusic(`latest trending music hits ${currentYear}`);
                     setTrendingVideos(fallback.data.videos || []);
                 } catch (e2) { }
             }
@@ -89,28 +97,76 @@ const Home = () => {
         <div className="home-fullwidth">
             {/* ===== PREMIUM HERO ===== */}
             <div className="fw-hero-premium" style={{
-                backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070&auto=format&fit=crop')`,
+                backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url('/hero-bg.png')`,
             }}>
                 <div className="fw-hero-glow"></div>
 
                 <div className="fw-hero-content-clean">
-                    <div className="fw-hero-badge">BEST OF MUSIC</div>
+                    <div className="fw-hero-badge">AESTHETICS OF SOUND</div>
+                    <h1 className="fw-hero-title">Your Universe <br/> of Sound.</h1>
+                    <p className="fw-hero-subtitle">Experience music like never before with high-fidelity streaming, AI-powered discovery, and a premium immersive interface tailored for you.</p>
                     <div className="fw-hero-actions">
                         <button className="premium-play-btn" onClick={() => navigate('/search')}>
                             <FiPlay /> START STREAMING
                         </button>
+                        <button className="premium-outline-btn" style={{ marginLeft: '12px' }} onClick={() => navigate('/search?q=trending')}>
+                            EXPLORE TRENDS
+                        </button>
                     </div>
                 </div>
             </div>
-            {/* ===== CAROUSEL DOTS ===== */}
-            <div className="fw-dots">
-                {[0, 1, 2, 3, 4].map(i => (
-                    <div key={i} className={`fw-dot ${carouselIndex === i ? 'active' : ''}`} onClick={() => setCarouselIndex(i)} />
-                ))}
+
+            {/* ===== FEATURE BAR ===== */}
+            <div className="feature-bar">
+                <div className="feature-item">
+                    <div className="feature-icon"><FiHeadphones /></div>
+                    <div className="feature-text">
+                        <span className="feature-title">High Fidelity</span>
+                        <span className="feature-desc">Uncompressed audio quality</span>
+                    </div>
+                </div>
+                <div className="feature-item">
+                    <div className="feature-icon"><FiGlobe /></div>
+                    <div className="feature-text">
+                        <span className="feature-title">Global Library</span>
+                        <span className="feature-desc">50M+ tracks available</span>
+                    </div>
+                </div>
+                <div className="feature-item">
+                    <div className="feature-icon"><FiStar /></div>
+                    <div className="feature-text">
+                        <span className="feature-title">AI Curation</span>
+                        <span className="feature-desc">Smart music discovery</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ===== MOOD DISCOVERY ===== */}
+            <div className="fw-section">
+                <div className="section-header">
+                    <h2 className="section-title"><span className="emoji">🌈</span> Discover by Mood</h2>
+                </div>
+                <div className="mood-grid">
+                    {MOODS.map(mood => (
+                        <div 
+                            key={mood.name} 
+                            className="mood-card" 
+                            style={{ '--mood-color': mood.color }}
+                            onClick={() => navigate(`/search?q=${encodeURIComponent(mood.query)}`)}
+                        >
+                            <div className="mood-card-glow"></div>
+                            <div className="mood-icon">{mood.icon}</div>
+                            <div className="mood-card-name">{mood.name}</div>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {/* ===== QUICK PLAY CAROUSEL ===== */}
             <div className="fw-carousel-section">
+                <div className="section-header" style={{ padding: '0 0 20px 0' }}>
+                    <h2 className="section-title"><span className="emoji">⚡</span> Quick Plays</h2>
+                </div>
                 <button className="fw-carousel-arrow left" onClick={() => scrollCarousel(-1)}>
                     <FiChevronLeft />
                 </button>
@@ -130,7 +186,7 @@ const Home = () => {
                             <div className="fw-card-info">
                                 <div className="fw-card-title">{item.title}</div>
                                 <div className="fw-card-meta">
-                                    <span>Animated videos</span>
+                                    <span>Curated Collection</span>
                                     <span><FiEye style={{ fontSize: '11px' }} /> {item.views}</span>
                                 </div>
                             </div>
@@ -140,6 +196,22 @@ const Home = () => {
                 <button className="fw-carousel-arrow right" onClick={() => scrollCarousel(1)}>
                     <FiChevronRight />
                 </button>
+            </div>
+
+            {/* ===== CINEMATIC SPOTLIGHT ===== */}
+            <div className="spotlight-section">
+                <div className="spotlight-banner">
+                    <div className="spotlight-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1514525253361-bee8a4874093?q=80&w=1964&auto=format&fit=crop')` }}></div>
+                    <div className="spotlight-overlay"></div>
+                    <div className="spotlight-content">
+                        <div className="spotlight-tag">#SPOTLIGHT</div>
+                        <h2 className="spotlight-title">Night City Anthems</h2>
+                        <p className="spotlight-desc">Discover the pulse of the urban night. A curated selection of synth-driven tracks that define the neon aesthetic.</p>
+                        <button className="premium-play-btn" onClick={() => navigate('/search?q=synthwave night driving')}>
+                            LISTEN NOW
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* ===== TRENDING SECTION ===== */}
@@ -168,7 +240,7 @@ const Home = () => {
                 </div>
                 <div className="artists-grid">
                     {(featuredArtists.length > 0 ? featuredArtists.filter(a => a.category === 'legend' || !a.category) : INDIAN_LEGENDS).slice(0, 6).map((artist, i) => (
-                        <div key={artist._id} className="artist-card animate-in" style={{ animationDelay: `${i * 0.06}s` }} onClick={() => navigate(`/artist/${artist._id || artist.name}`)}>
+                        <div key={artist._id || artist.name} className="artist-card animate-in" style={{ animationDelay: `${i * 0.06}s` }} onClick={() => navigate(`/artist/${artist._id || artist.name}`)}>
                             <img className="artist-card-img" src={artist.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.name)}&background=6c5ce7&color=fff&size=200`} alt={artist.name} loading="lazy" onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.name)}&background=6c5ce7&color=fff&size=200`; }} />
                             <div className="artist-card-overlay">
                                 <div className="artist-card-name">{artist.name}</div>
@@ -188,7 +260,7 @@ const Home = () => {
                 </div>
                 <div className="artists-grid">
                     {MODERN_STARS.map((artist, i) => (
-                        <div key={artist._id} className="artist-card animate-in" style={{ animationDelay: `${i * 0.06 + 0.5}s` }} onClick={() => navigate(`/artist/${artist._id || artist.name}`)}>
+                        <div key={artist._id || artist.name} className="artist-card animate-in" style={{ animationDelay: `${i * 0.06 + 0.5}s` }} onClick={() => navigate(`/artist/${artist._id || artist.name}`)}>
                             <img className="artist-card-img" src={artist.image} alt={artist.name} loading="lazy" onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.name)}&background=6c5ce7&color=fff&size=200`; }} />
                             <div className="artist-card-overlay">
                                 <div className="artist-card-name">{artist.name}</div>
@@ -208,7 +280,7 @@ const Home = () => {
                 </div>
                 <div className="artists-grid">
                     {INTERNATIONAL_ICONS.map((artist, i) => (
-                        <div key={artist._id} className="artist-card animate-in" style={{ animationDelay: `${i * 0.06 + 1.0}s` }} onClick={() => navigate(`/artist/${artist._id || artist.name}`)}>
+                        <div key={artist._id || artist.name} className="artist-card animate-in" style={{ animationDelay: `${i * 0.06 + 1.0}s` }} onClick={() => navigate(`/artist/${artist._id || artist.name}`)}>
                             <img className="artist-card-img" src={artist.image} alt={artist.name} loading="lazy" onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.name)}&background=6c5ce7&color=fff&size=200`; }} />
                             <div className="artist-card-overlay">
                                 <div className="artist-card-name">{artist.name}</div>
@@ -246,7 +318,7 @@ const Home = () => {
                     <span onClick={() => navigate('/search?q=genres music')}>Genres</span>
                     <span>Contact Us</span>
                 </div>
-                <p className="fw-footer-copy">© 2024 MelodyVerse — Stream the Greatest Music ⭐</p>
+                <p className="fw-footer-copy">© {new Date().getFullYear()} MelodyVerse — Stream the Greatest Music ⭐</p>
             </footer>
         </div>
     );

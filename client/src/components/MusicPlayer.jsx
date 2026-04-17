@@ -13,12 +13,14 @@ const MusicPlayer = () => {
 
     const playerRef = useRef(null);
     const iframeRef = useRef(null);
+    const containerRef = useRef(null);
     const [ytPlayer, setYtPlayer] = useState(null);
     const [currentTime, setCurrentTime] = useState(0);
     const [totalTime, setTotalTime] = useState(0);
     const progressInterval = useRef(null);
     const [videoSize, setVideoSize] = useState({ width: 320, height: 180 });
     const isResizing = useRef(false);
+    const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
     const [showQualityMenu, setShowQualityMenu] = useState(false);
     const [quality, setQuality] = useState('auto');
     const [seekFeedback, setSeekFeedback] = useState(null);
@@ -139,11 +141,11 @@ const MusicPlayer = () => {
 
     useEffect(() => {
         if (!ytPlayer) return;
-        try { isPlaying ? ytPlayer.playVideo() : ytPlayer.pauseVideo(); } catch (e) {}
+        try { isPlaying ? ytPlayer.playVideo() : ytPlayer.pauseVideo(); } catch (e) { }
     }, [isPlaying, ytPlayer]);
 
     useEffect(() => {
-        if (ytPlayer) { try { ytPlayer.setVolume(volume); } catch (e) {} }
+        if (ytPlayer) { try { ytPlayer.setVolume(volume); } catch (e) { } }
     }, [volume, ytPlayer]);
 
     const startProgressTracking = (player) => {
@@ -155,7 +157,7 @@ const MusicPlayer = () => {
                 setCurrentTime(current);
                 setTotalTime(total);
                 if (total > 0) { setProgress((current / total) * 100); setDuration(total); }
-            } catch (e) {}
+            } catch (e) { }
         }, 500);
     };
 
@@ -182,7 +184,7 @@ const MusicPlayer = () => {
     };
 
     const changeQuality = (level) => {
-        if (ytPlayer) { try { ytPlayer.setPlaybackQuality(level); setQuality(level); setShowQualityMenu(false); } catch (e) {} }
+        if (ytPlayer) { try { ytPlayer.setPlaybackQuality(level); setQuality(level); setShowQualityMenu(false); } catch (e) { } }
     };
 
     // Resize logic
@@ -197,7 +199,7 @@ const MusicPlayer = () => {
     const handleResize = (e) => {
         if (!isResizing.current) return;
         const rect = document.querySelector('.youtube-embed-container').getBoundingClientRect();
-        const newWidth = Math.max(200, Math.min(800, rect.right - e.clientX));
+        const newWidth = Math.max(200, Math.min(800, e.clientX - rect.left));
         setVideoSize({ width: newWidth, height: newWidth * (9 / 16) });
     };
     const stopResize = () => {
@@ -207,7 +209,23 @@ const MusicPlayer = () => {
         document.removeEventListener('mousemove', handleResize);
         document.removeEventListener('mouseup', stopResize);
     };
-    useEffect(() => () => { document.removeEventListener('mousemove', handleResize); document.removeEventListener('mouseup', stopResize); }, []);
+    useEffect(() => {
+        const handleFsChange = () => {
+            setIsNativeFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFsChange);
+        return () => document.removeEventListener('fullscreenchange', handleFsChange);
+    }, []);
+
+    const toggleNativeFullscreen = () => {
+        if (!document.fullscreenElement) {
+            containerRef.current?.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
 
     // ─── Drag handlers for free-move ───────────────────────────────────────────
     const startDrag = useCallback((e) => {
@@ -243,7 +261,7 @@ const MusicPlayer = () => {
     const thumbSrc = currentVideo.thumbnail || `https://img.youtube.com/vi/${currentVideo.videoId}/mqdefault.jpg`;
 
     // Video position style — only used in non-theater PiP mode
-    const videoPosStyle = !isTheaterMode ? {
+    const videoPosStyle = (!isTheaterMode && !isNativeFullscreen) ? {
         width: `${videoSize.width}px`,
         height: `${videoSize.height}px`,
         left: `${videoPos.x}px`,
@@ -254,7 +272,8 @@ const MusicPlayer = () => {
     // Render video via portal to escape music-player's backdrop-filter stacking context
     const videoPortal = createPortal(
         <div
-            className={`youtube-embed-container ${showVideo ? 'show-video' : 'hide-video'} ${isTheaterMode ? 'theater-mode' : ''}`}
+            ref={containerRef}
+            className={`youtube-embed-container ${showVideo ? 'show-video' : 'hide-video'} ${isTheaterMode ? 'theater-mode' : ''} ${isNativeFullscreen ? 'native-fs' : ''}`}
             style={videoPosStyle}
         >
             {/* Drag handle bar */}
@@ -276,6 +295,9 @@ const MusicPlayer = () => {
                 )}
                 {showVideo && (
                     <>
+                        {isTheaterMode ? (
+                            <button className="video-close-btn" style={{ right: '50px' }} onClick={() => setIsTheaterMode(false)} title="Exit Theater Mode (Minimize)"><FiMinimize2 /></button>
+                        ) : null}
                         <button className="video-close-btn" style={{ right: '10px' }} onClick={() => setShowVideo(false)} title="Close Video"><FiX /></button>
                         <div className="video-controls-top">
                             <div className="quality-menu-container">
@@ -292,7 +314,9 @@ const MusicPlayer = () => {
                                 )}
                             </div>
                             <button className="video-control-btn" onClick={() => setIsTheaterMode(!isTheaterMode)} title="Theater Mode"><FiAirplay /></button>
-                            <button className="video-control-btn" onClick={() => document.getElementById('yt-player').requestFullscreen()} title="Fullscreen"><FiMaximize /></button>
+                            <button className="video-control-btn" onClick={toggleNativeFullscreen} title={isNativeFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
+                                {isNativeFullscreen ? <FiMinimize2 /> : <FiMaximize />}
+                            </button>
                         </div>
                         {!isTheaterMode && <div className="video-resize-handle" onMouseDown={startResize} title="Drag to Resize" />}
                     </>
