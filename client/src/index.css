@@ -120,13 +120,25 @@ body {
 
 .sidebar.collapsed .sidebar-label,
 .sidebar.collapsed .sidebar-section-title,
+.sidebar.collapsed .logo-text-side {
+  display: none !important;
+}
+
 .sidebar.collapsed .sidebar-header {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  pointer-events: none;
-  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0 !important;
+  margin: 0 -8px 24px -8px !important;
+  justify-content: center !important;
+  width: 68px !important;
+  display: flex !important;
+}
+
+.sidebar.collapsed .sidebar-logo {
+  padding: 0 !important;
+  margin: 0 !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  width: 100% !important;
+  display: flex !important;
 }
 
 .sidebar.collapsed .sidebar-item {
@@ -218,6 +230,8 @@ body {
   margin-bottom: 40px;
   cursor: pointer;
   padding: 0 16px;
+  min-width: 0;
+  width: 100%;
 }
 
 .logo-text-side {
@@ -226,6 +240,9 @@ body {
   font-weight: 900;
   letter-spacing: 0;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
 }
 
 .logo-accent {
@@ -245,6 +262,9 @@ body {
   margin-bottom: 18px;
   padding: 0 8px;
   margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sidebar-item {
@@ -259,6 +279,7 @@ body {
   border-radius: 12px;
   transition: 0.2s;
   margin-bottom: 4px;
+  min-width: 0;
 }
 
 .sidebar-item:hover {
@@ -288,6 +309,14 @@ body {
 .sidebar-icon {
   font-size: 18px;
   display: flex;
+  flex-shrink: 0;
+}
+
+.sidebar-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }
 
 /* ==================== TOP NAV (Updated) ==================== */
@@ -334,8 +363,22 @@ body {
 }
 
 .logo-icon-top {
-  font-size: 22px;
+  display: flex;
+  align-items: center;
   filter: drop-shadow(0 0 10px var(--accent-glow));
+}
+
+.logo-icon-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .logo-text-top {

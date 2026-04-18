@@ -103,7 +103,7 @@ const Home = () => {
 
                 <div className="fw-hero-content-clean">
                     <div className="fw-hero-badge">AESTHETICS OF SOUND</div>
-                    <h1 className="fw-hero-title">Your Universe <br/> of Sound.</h1>
+                    <h1 className="fw-hero-title">Your Universe <br /> of Sound.</h1>
                     <p className="fw-hero-subtitle">Experience music like never before with high-fidelity streaming, AI-powered discovery, and a premium immersive interface tailored for you.</p>
                     <div className="fw-hero-actions">
                         <button className="premium-play-btn" onClick={() => navigate('/search')}>
@@ -148,9 +148,9 @@ const Home = () => {
                 </div>
                 <div className="mood-grid">
                     {MOODS.map(mood => (
-                        <div 
-                            key={mood.name} 
-                            className="mood-card" 
+                        <div
+                            key={mood.name}
+                            className="mood-card"
                             style={{ '--mood-color': mood.color }}
                             onClick={() => navigate(`/search?q=${encodeURIComponent(mood.query)}`)}
                         >

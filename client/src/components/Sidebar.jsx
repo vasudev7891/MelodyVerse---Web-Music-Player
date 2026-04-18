@@ -57,7 +57,9 @@ const Sidebar = ({ isOpen, setIsOpen, onResizeStart }) => {
 
             <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px', padding: '0 10px' }}>
                 <div className="sidebar-logo" onClick={() => { navigate('/'); closeSidebarOnMobile(); }} style={{ margin: 0 }}>
-                    <div className="logo-icon-side">🎵</div>
+                    <div className="logo-icon-side">
+                        <img src="/favicon.svg" alt="MelodyVerse Logo" className="app-logo-img" />
+                    </div>
                     <div className="logo-text-side">
                         MELODY<span className="logo-accent">VERSE</span>
                     </div>

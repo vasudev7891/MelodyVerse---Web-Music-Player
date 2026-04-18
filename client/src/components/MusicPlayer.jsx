@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiX, FiDownload, FiTv, FiMaximize, FiAirplay, FiSettings, FiSquare, FiMinimize2, FiChevronsRight, FiChevronsLeft, FiShuffle, FiRepeat, FiMove } from 'react-icons/fi';
+import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiX, FiTv, FiMaximize, FiAirplay, FiSettings, FiSquare, FiMinimize2, FiChevronsRight, FiChevronsLeft, FiShuffle, FiRepeat, FiMove } from 'react-icons/fi';
+import { FaYoutube } from 'react-icons/fa';
 import { useMusic } from '../context/MusicContext';
 
 const MusicPlayer = () => {
@@ -179,7 +180,7 @@ const MusicPlayer = () => {
         return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
     };
 
-    const handleDownload = () => {
+    const handleYouTube = () => {
         if (currentVideo) window.open(`https://www.youtube.com/watch?v=${currentVideo.videoId}`, '_blank');
     };
 
@@ -376,8 +377,8 @@ const MusicPlayer = () => {
                     <button className={`player-btn ${showVideo ? 'active' : ''}`} onClick={() => setShowVideo(!showVideo)} title="Toggle Video (V)">
                         <FiTv />
                     </button>
-                    <button className="player-btn" onClick={handleDownload} title="Open in YouTube">
-                        <FiDownload />
+                    <button className="player-btn" onClick={handleYouTube} title="Open in YouTube">
+                        <FaYoutube />
                     </button>
                     <div className="volume-control" title={`Volume: ${volume}% (↑↓ to adjust, M to mute)`}>
                         <button className="player-btn" onClick={() => setVolume(volume === 0 ? 80 : 0)}>
@@ -390,6 +391,9 @@ const MusicPlayer = () => {
                             max="100"
                             value={volume}
                             onChange={e => setVolume(Number(e.target.value))}
+                            style={{
+                                background: `linear-gradient(to right, #6c5ce7 0%, #a29bfe ${volume/2}%, #fd79a8 ${volume}%, rgba(255, 255, 255, 0.15) ${volume}%)`
+                            }}
                         />
                     </div>
                     <button className="player-close" onClick={closePlayer} title="Close Player">

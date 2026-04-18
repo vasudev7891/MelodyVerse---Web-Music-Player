@@ -131,7 +131,9 @@ const TopNavbar = ({ onToggleSidebar }) => {
                             <FiMenu />
                         </button>
                         <div className="top-nav-logo" onClick={() => navigate('/')}>
-                            <div className="logo-icon-top">🎵</div>
+                            <div className="logo-icon-top">
+                                <img src="/favicon.svg" alt="MelodyVerse Logo" className="app-logo-img" />
+                            </div>
                             <div className="logo-text-top">
                                 <span className="logo-name">MELODY<span className="logo-accent">VERSE</span></span>
                                 <span className="logo-sub">Music Video Streaming App</span>
