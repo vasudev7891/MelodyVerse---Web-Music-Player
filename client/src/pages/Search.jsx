@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FiSearch, FiChevronRight, FiChevronLeft } from 'react-icons/fi';
 import SongCard from '../components/SongCard';
 import { searchMusic, getTrending } from '../services/api';
+import { searchResultsCache, trendingCache } from '../utils/searchCache';
 
 const Search = () => {
     const [searchParams] = useSearchParams();
@@ -13,6 +14,7 @@ const Search = () => {
     const [loading, setLoading] = useState(false);
     const [searchInput, setSearchInput] = useState(query);
     const [nextPage, setNextPage] = useState(null);
+    const lastSearchedQuery = useRef('');
 
     useEffect(() => {
         if (query) {
@@ -24,14 +26,25 @@ const Search = () => {
     }, [query]);
 
     const loadExploreData = async () => {
+        // ─── Check client cache first ──────────────────────────────────
+        const cachedExplore = trendingCache.get('exploreData');
+        if (cachedExplore) {
+            setWeeklyTop(cachedExplore.weeklyTop);
+            setTrending(cachedExplore.trending);
+            return;
+        }
         setLoading(true);
         try {
+            // ─── Preload Smartly: use videos.list (1 unit) instead of search.list (100 units) ───
             const [topRes, trendRes] = await Promise.all([
-                searchMusic('top tracks 2024 hits'),
-                getTrending('IN').catch(() => searchMusic('trending music'))
+                getTrending('US').catch(() => getTrending('IN')),
+                getTrending('IN').catch(() => ({ data: { videos: [] } }))
             ]);
-            setWeeklyTop(topRes.data.videos?.slice(0, 6) || []);
-            setTrending(trendRes.data.videos?.slice(0, 8) || []);
+            const weeklyTopData = topRes.data.videos?.slice(0, 6) || [];
+            const trendingData = trendRes.data.videos?.slice(0, 8) || [];
+            setWeeklyTop(weeklyTopData);
+            setTrending(trendingData);
+            trendingCache.set('exploreData', { weeklyTop: weeklyTopData, trending: trendingData });
         } catch (e) {
             console.error('Explore data load failed');
         } finally {
@@ -41,13 +54,31 @@ const Search = () => {
 
     const handleSearch = async (q, pageToken = null) => {
         if (!q.trim()) return;
+
+        // ─── Duplicate query prevention (no pageToken = fresh search) ──
+        if (!pageToken && q.trim() === lastSearchedQuery.current) {
+            const cached = searchResultsCache.get(`search:${q.trim().toLowerCase()}`);
+            if (cached) {
+                setResults(cached.videos);
+                setNextPage(cached.nextPageToken);
+                return;
+            }
+        }
+
         setLoading(true);
         try {
             const res = await searchMusic(q, pageToken);
             if (pageToken) {
                 setResults(prev => [...prev, ...(res.data.videos || [])]);
             } else {
-                setResults(res.data.videos || []);
+                const videos = res.data.videos || [];
+                setResults(videos);
+                // Cache first-page results
+                searchResultsCache.set(`search:${q.trim().toLowerCase()}`, {
+                    videos,
+                    nextPageToken: res.data.nextPageToken
+                });
+                lastSearchedQuery.current = q.trim();
             }
             setNextPage(res.data.nextPageToken);
         } catch (error) {

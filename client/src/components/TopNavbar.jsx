@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useMusic } from '../context/MusicContext';
 import AuthModal from './AuthModal';
 import { searchMusic } from '../services/api';
+import { suggestionsCache } from '../utils/searchCache';
 
 const STATIC_SUGGESTIONS = [
     "Arijit Singh", "Taylor Swift", "Lata Mangeshkar", "Kishore Kumar", "Ed Sheeran",
@@ -29,6 +30,7 @@ const TopNavbar = ({ onToggleSidebar }) => {
     const dropdownRef = useRef(null);
     const debounceTimer = useRef(null);
     const inputRef = useRef(null);
+    const lastFetchedQuery = useRef('');
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -47,22 +49,44 @@ const TopNavbar = ({ onToggleSidebar }) => {
     // Debounced search for live video suggestions
     const fetchVideoSuggestions = useCallback((query) => {
         clearTimeout(debounceTimer.current);
-        if (!query.trim()) {
+        const trimmed = query.trim();
+        if (!trimmed) {
             setVideoSuggestions([]);
             setLoadingVideos(false);
+            return;
+        }
+        // ─── Min query length guard (< 3 chars = skip API call) ────────
+        if (trimmed.length < 3) {
+            setLoadingVideos(false);
+            return;
+        }
+        // ─── Duplicate query prevention ────────────────────────────────
+        if (trimmed === lastFetchedQuery.current) {
             return;
         }
         setLoadingVideos(true);
         debounceTimer.current = setTimeout(async () => {
             try {
+                // ─── Client cache check ────────────────────────────────
+                const cacheKey = `suggest:${trimmed.toLowerCase()}`;
+                const cached = suggestionsCache.get(cacheKey);
+                if (cached) {
+                    setVideoSuggestions(cached);
+                    lastFetchedQuery.current = trimmed;
+                    setLoadingVideos(false);
+                    return;
+                }
                 const res = await searchMusic(query);
-                setVideoSuggestions((res.data.videos || []).slice(0, 5));
+                const videos = (res.data.videos || []).slice(0, 5);
+                setVideoSuggestions(videos);
+                suggestionsCache.set(cacheKey, videos);
+                lastFetchedQuery.current = trimmed;
             } catch (e) {
                 setVideoSuggestions([]);
             } finally {
                 setLoadingVideos(false);
             }
-        }, 420);
+        }, 600);
     }, []);
 
     const handleInput = (e) => {

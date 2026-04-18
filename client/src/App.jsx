@@ -15,6 +15,7 @@ import CategoryPage from './pages/CategoryPage';
 import Favorites from './pages/Favorites';
 import Playlists from './pages/Playlists';
 import TimeMachine from './pages/TimeMachine';
+import Recents from './pages/Recents';
 import Admin from './pages/Admin';
 import About from './pages/About';
 import Settings from './pages/Settings';
@@ -97,6 +98,7 @@ function App() {
             <Route path="/artist/:id" element={<ArtistPage />} />
             <Route path="/category/:name" element={<CategoryPage />} />
             <Route path="/favorites" element={<Favorites />} />
+            <Route path="/recents" element={<Recents />} />
             <Route path="/playlists" element={<Playlists />} />
             <Route path="/time-machine" element={<TimeMachine />} />
             <Route path="/admin" element={<Admin />} />

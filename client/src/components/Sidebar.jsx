@@ -24,7 +24,7 @@ const Sidebar = ({ isOpen, setIsOpen, onResizeStart }) => {
     ];
 
     const libraryItems = [
-        { icon: <FiClock />, label: 'Recents', to: '/search?q=recent' },
+        { icon: <FiClock />, label: 'Recents', to: '/recents' },
         { icon: <FiHeart />, label: 'Favourites', to: '/favorites' },
         { icon: <FiFolder />, label: 'Local', to: '/search?q=local' },
     ];

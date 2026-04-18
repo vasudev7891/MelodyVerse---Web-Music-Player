@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiPlay, FiChevronRight, FiChevronLeft, FiEye, FiHeadphones, FiGlobe, FiStar, FiZap, FiMusic, FiActivity, FiSmile, FiCoffee, FiTrendingUp } from 'react-icons/fi';
 import SongCard from '../components/SongCard';
 import { getFeaturedArtists, getCategories, getTrending, searchMusic } from '../services/api';
+import { searchResultsCache, trendingCache } from '../utils/searchCache';
 import { useMusic } from '../context/MusicContext';
 import { LEGENDARY_ARTISTS, INDIAN_LEGENDS, MODERN_STARS, INTERNATIONAL_ICONS } from '../constants/artists';
 
@@ -57,15 +58,26 @@ const Home = () => {
             const artists = artistsRes.data.artists || [];
             setFeaturedArtists(artists.length > 0 ? artists : LEGENDARY_ARTISTS);
             setCategories(catsRes.data.categories || []);
-            try {
-                const trendRes = await getTrending('IN');
-                setTrendingVideos(trendRes.data.videos || []);
-            } catch (e) {
+
+            // ─── Check cache for trending data ─────────────────────────
+            const cachedTrending = trendingCache.get('homeTrending');
+            if (cachedTrending) {
+                setTrendingVideos(cachedTrending);
+            } else {
                 try {
-                    const currentYear = new Date().getFullYear();
-                    const fallback = await searchMusic(`latest trending music hits ${currentYear}`);
-                    setTrendingVideos(fallback.data.videos || []);
-                } catch (e2) { }
+                    const trendRes = await getTrending('IN');
+                    const videos = trendRes.data.videos || [];
+                    setTrendingVideos(videos);
+                    trendingCache.set('homeTrending', videos);
+                } catch (e) {
+                    try {
+                        const currentYear = new Date().getFullYear();
+                        const fallback = await searchMusic(`latest trending music hits ${currentYear}`);
+                        const videos = fallback.data.videos || [];
+                        setTrendingVideos(videos);
+                        trendingCache.set('homeTrending', videos);
+                    } catch (e2) { }
+                }
             }
         } catch (error) {
             console.error('Failed to load home data:', error);
@@ -78,8 +90,16 @@ const Home = () => {
 
     const handleQuickPlay = async (item) => {
         try {
+            // ─── Check cache first for Quick Play ──────────────────────
+            const cacheKey = `quickplay:${item.query.toLowerCase()}`;
+            const cached = searchResultsCache.get(cacheKey);
+            if (cached) {
+                if (cached.length > 0) playVideo(cached[0], cached);
+                return;
+            }
             const res = await searchMusic(item.query);
             const videos = res.data.videos || [];
+            searchResultsCache.set(cacheKey, videos);
             if (videos.length > 0) {
                 playVideo(videos[0], videos);
             }
