@@ -333,7 +333,12 @@ const Home = () => {
             {/* ===== BOTTOM FOOTER ===== */}
             <footer className="fw-footer">
                 <div className="fw-footer-links">
-                    <span onClick={() => navigate('/')}>Home</span>
+                    <span onClick={() => {
+                        const scrollContainer = document.querySelector('.main-scroll');
+                        if (scrollContainer) {
+                            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    }}>Home</span>
                     <span onClick={() => navigate('/search')}>Explore</span>
                     <span onClick={() => navigate('/search?q=genres music')}>Genres</span>
                     <span>Contact Us</span>

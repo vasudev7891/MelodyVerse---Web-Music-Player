@@ -7,7 +7,6 @@ MelodyVerse is a full-stack, responsive music streaming web application. It feat
 - **MelodyBot AI Assistant:** A sophisticated voice-activated chatbot powered by the Google Gemini AI API, capable of taking natural language commands to auto-play songs, navigate the app, and recommend dynamic playlists.
 - **Deep-Learning Mood Camera:** Uses the `face-api.js` SDK running an offline Neural Network in your browser to accurately detect your facial expressions (Happy, Sad, Angry, etc.) and auto-play music to match your mood—with 100% privacy!
 - **Dynamic Search:** Live search suggestions and seamless music querying using the YouTube API, with intelligent caching and quota optimization.
-- **Recently Played:** A dedicated Recents page that shows your real listening history — just like a real music player app.
 - **Custom Player:** Beautiful persistent music player with play/pause, progress tracking, and volume controls.
 - **Authentication:** Secure user registration, login, and profile management with JWT.
 - **Premium UI:** Built with React, Vite, and detailed CSS for a premium glassmorphic aesthetic.
@@ -75,21 +74,6 @@ npm run dev:client
 ```bash
 npm run deploy
 ```
-## ⚡ YouTube API Quota Optimization
-
-The YouTube Data API v3 has a strict daily quota of **10,000 units** (each `search.list` call costs 100 units). MelodyVerse implements 7 layers of optimization to reduce quota usage by **~70-85%**:
-
-| # | Optimization | Impact |
-|---|---|---|
-| 1 | **Server-side cache** (`node-cache`, 15-min TTL) on all 6 YouTube endpoints | Eliminates 60-80% of redundant calls |
-| 2 | **Client-side LRU cache** with TTL for search results, suggestions, and trending data | 20-30% additional savings for returning users |
-| 3 | **Debounced search** (600ms) on live typing suggestions | Prevents API spam during typing |
-| 4 | **Minimum query length** (3 chars) — server + client guard | Cuts useless short-query API calls |
-| 5 | **Duplicate call prevention** — tracks last fetched query | Prevents re-fetching same results |
-| 6 | **Reduced maxResults** (20→10 for search, 15→8 for related) | Smaller payloads, less data transfer |
-| 7 | **Smart preloading** — uses `videos.list` (1 unit) instead of `search.list` (100 units) for Explore page | 99% cost reduction for Explore |
-
-**Monitor usage:** Watch the server terminal for `⚡ CACHE HIT` vs `🌐 API CALL` logs to track real-time savings.
 
 ## 🤝 Contributing
 

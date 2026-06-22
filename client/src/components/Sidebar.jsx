@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { FiHome, FiCompass, FiMusic, FiClock, FiHeart, FiFolder, FiPlusCircle, FiBarChart, FiInfo, FiSettings } from 'react-icons/fi';
+import { FiHome, FiCompass, FiMusic, FiClock, FiHeart, FiFolder, FiPlusCircle, FiBarChart, FiInfo, FiSettings, FiCalendar, FiShield } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ isOpen, setIsOpen, onResizeStart }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { user } = useAuth();
 
     const isItemActive = (to) => {
         const url = new URL(to, 'http://x');
@@ -26,6 +28,7 @@ const Sidebar = ({ isOpen, setIsOpen, onResizeStart }) => {
     const libraryItems = [
         { icon: <FiClock />, label: 'Recents', to: '/recents' },
         { icon: <FiHeart />, label: 'Favourites', to: '/favorites' },
+        { icon: <FiCalendar />, label: 'Time Machine', to: '/time-machine' },
         { icon: <FiFolder />, label: 'Local', to: '/search?q=local' },
     ];
 
@@ -36,6 +39,7 @@ const Sidebar = ({ isOpen, setIsOpen, onResizeStart }) => {
     ];
 
     const otherItems = [
+        ...(user?.role === 'admin' ? [{ icon: <FiShield />, label: 'Admin Panel', to: '/admin' }] : []),
         { icon: <FiInfo />, label: 'About', to: '/about' },
         { icon: <FiSettings />, label: 'Settings', to: '/settings' },
     ];

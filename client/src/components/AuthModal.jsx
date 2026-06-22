@@ -96,6 +96,28 @@ const AuthModal = ({ mode, onClose, onSwitchMode }) => {
                 
                 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
                 @keyframes scaleUp { to { transform: scale(1); } }
+
+                @media (max-width: 950px) {
+                    .modern-auth-container {
+                        width: 90% !important;
+                        max-width: 420px !important;
+                        height: auto !important;
+                        max-height: 90vh !important;
+                        flex-direction: column !important;
+                    }
+                    .auth-side-graphic {
+                        display: none !important;
+                    }
+                    .auth-form-wrapper {
+                        padding: 40px 24px !important;
+                    }
+                    .modern-close-btn {
+                        top: 16px !important;
+                        right: 16px !important;
+                        width: 36px !important;
+                        height: 36px !important;
+                    }
+                }
             `}</style>
 
             <div className="modern-auth-container" onClick={e => e.stopPropagation()}>

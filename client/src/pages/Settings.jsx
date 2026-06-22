@@ -7,13 +7,13 @@ const Settings = () => {
     const [notifications, setNotifications] = useState(true);
 
     return (
-        <div className="page-container" style={{ padding: '120px 40px 40px', maxWidth: '800px', margin: '0 auto' }}>
-            <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '40px', color: 'var(--text-main)' }}>Settings</h1>
+        <div className="page-container">
+            <h1 className="page-title static">Settings</h1>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
                 {/* Playback Settings */}
-                <div style={{ background: 'var(--bg-glass)', borderRadius: '24px', padding: '30px', border: '1px solid var(--border)' }}>
+                <div className="page-card">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(253, 121, 168, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-pink)' }}><FiVolume2 size={20} /></div>
                         <h2 style={{ fontSize: '1.4rem' }}>Playback</h2>
@@ -42,7 +42,7 @@ const Settings = () => {
                 </div>
 
                 {/* Notifications & Privacy */}
-                <div style={{ background: 'var(--bg-glass)', borderRadius: '24px', padding: '30px', border: '1px solid var(--border)' }}>
+                <div className="page-card">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2ecc71' }}><FiBell size={20} /></div>
                         <h2 style={{ fontSize: '1.4rem' }}>Notifications</h2>

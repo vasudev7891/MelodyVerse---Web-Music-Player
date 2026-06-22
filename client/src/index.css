@@ -343,6 +343,24 @@ body {
   justify-content: space-between;
 }
 
+.top-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.top-nav-center {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 20px;
+}
+
+.top-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
 /* Hide original logo and links in desktop if sidebar is present */
 .top-nav-logo,
 .top-nav-links {
@@ -1584,28 +1602,103 @@ body {
   text-align: center;
   padding: 80px 40px;
   border-top: 1px solid var(--border);
-  margin-top: 80px;
-  background: rgba(7, 7, 10, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  margin-top: 100px;
+  background: linear-gradient(180deg, rgba(7, 7, 10, 0.3) 0%, rgba(13, 13, 18, 0.7) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle gradient top border glow */
+.fw-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), var(--accent), var(--border), transparent);
+  opacity: 0.8;
 }
 
 .fw-footer-links {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 40px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .fw-footer-links span {
-  color: var(--text-fade);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
   cursor: pointer;
-  transition: 0.3s;
-  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  padding: 4px 0;
+}
+
+.fw-footer-links span::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--gradient);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
 }
 
 .fw-footer-links span:hover {
-  color: var(--accent);
+  color: var(--text-main);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.fw-footer-links span:hover::after {
+  width: 100%;
+}
+
+.fw-footer-copy {
+  color: var(--text-fade);
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+  letter-spacing: 0.5px;
+  transition: color 0.3s ease;
+}
+
+.fw-footer-copy:hover {
+  color: var(--text-dim);
+}
+
+/* Responsive Footer adjustments */
+@media (max-width: 768px) {
+  .fw-footer {
+    padding: 60px 24px 140px;
+    /* Extra bottom padding on mobile/tablet to clear music player and FABs */
+    margin-top: 60px;
+  }
+
+  .fw-footer-links {
+    gap: 24px;
+  }
+
+  .fw-footer-links span {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+  }
+
+  .fw-footer-copy {
+    font-size: 12px;
+    padding: 0 16px;
+    max-width: 85%;
+  }
 }
 
 /* ==================== MISC ==================== */
@@ -1752,14 +1845,58 @@ body {
 }
 
 @media (max-width: 1000px) {
+  .top-nav {
+    height: auto !important;
+    padding: 16px 20px !important;
+  }
 
-  .top-nav-links,
-  .top-nav-search {
-    display: none;
+  .top-nav-inner {
+    display: grid !important;
+    grid-template-areas:
+      "left right"
+      "center center" !important;
+    grid-template-columns: 1fr auto !important;
+    row-gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .top-nav-left {
+    grid-area: left !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+  }
+
+  .top-nav-center {
+    grid-area: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+
+  .top-nav-right {
+    grid-area: right !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 15px !important;
+  }
+
+  .top-nav-links {
+    display: none !important;
   }
 
   .mobile-toggle {
-    display: block;
+    display: none !important;
+  }
+
+  .explore-dashboard {
+    padding-top: 140px !important;
+  }
+
+  .fw-hero-premium {
+    padding-top: 140px !important;
   }
 }
 
@@ -2212,6 +2349,10 @@ body {
   width: 100%;
 }
 
+.mobile-fabs {
+  display: none;
+}
+
 /* ==================== MOBILE RESPONSIVE ==================== */
 @media (max-width: 768px) {
   .sidebar {
@@ -2229,8 +2370,9 @@ body {
     display: flex !important;
   }
 
-  .sidebar.closed {
-    transform: translateX(-100%);
+  .sidebar.closed,
+  .sidebar.collapsed {
+    transform: translateX(-100%) !important;
     pointer-events: none;
   }
 
@@ -2249,54 +2391,72 @@ body {
 
   .music-player {
     left: 0 !important;
-    padding: 0 16px;
-    height: 80px;
-    gap: 10px;
+    padding: 0 12px !important;
+    height: 76px !important;
+    gap: 8px !important;
+    justify-content: space-between !important;
   }
 
   .player-track-info {
-    min-width: auto;
-    flex: 1;
+    min-width: auto !important;
+    max-width: 140px !important;
+    gap: 8px !important;
+    flex: 1 !important;
+  }
+
+  .player-thumb {
+    width: 44px !important;
+    height: 44px !important;
   }
 
   .player-track-title {
-    font-size: 13px;
+    font-size: 12px !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 150px;
+    max-width: 80px !important;
+  }
+
+  .player-track-artist {
+    font-size: 10px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80px !important;
   }
 
   .player-controls {
-    flex: none;
+    flex: none !important;
   }
 
-  .player-progress {
-    display: none !important;
+  .player-buttons {
+    gap: 8px !important;
   }
+
+  .player-btn {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 14px !important;
+  }
+
+  .player-btn.play-pause {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 16px !important;
+  }
+
+  .player-extra {
+    gap: 6px !important;
+  }
+
+  .player-close {
+    font-size: 15px !important;
+    padding: 6px !important;
+  }
+
 
   .top-nav {
-    height: 110px !important;
-    flex-direction: column;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 16px;
-  }
-
-  .top-nav-inner {
-    width: 100%;
-    height: auto;
-    justify-content: space-between;
-  }
-
-  .top-nav-search-row {
-    width: 100%;
-    max-width: 100% !important;
-  }
-
-  .top-nav-search-row .top-nav-search {
-    width: 100%;
-    margin: 0;
+    padding: 12px 16px !important;
   }
 
   .top-feature-btns {
@@ -2335,13 +2495,26 @@ body {
   }
 
   .fw-hero-premium {
-    height: 40vh;
-    min-height: 300px;
+    height: auto !important;
+    min-height: 380px !important;
+    padding: 140px 16px 40px !important;
   }
 
   .fw-hero-content-clean {
-    margin-top: 2rem;
-    padding: 0 15px;
+    margin-top: 0 !important;
+    padding: 0 !important;
+  }
+
+  .fw-hero-title {
+    font-size: 32px !important;
+    margin-bottom: 12px !important;
+    letter-spacing: -1px !important;
+  }
+
+  .fw-hero-subtitle {
+    font-size: 14px !important;
+    margin-bottom: 24px !important;
+    max-width: 100% !important;
   }
 
   .premium-play-btn,
@@ -2358,6 +2531,117 @@ body {
     z-index: 2999;
     display: block;
   }
+
+  /* PiP Video Player mobile docking */
+  .youtube-embed-container:not(.theater-mode):not(.native-fs) {
+    left: 16px !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: 96px !important;
+    width: 200px !important;
+    height: 112px !important;
+    position: fixed !important;
+    z-index: 3500 !important;
+  }
+
+  .youtube-embed-container:not(.theater-mode):not(.native-fs) .video-inner {
+    height: 100% !important;
+    border-radius: 14px !important;
+  }
+
+  .youtube-embed-container:not(.theater-mode):not(.native-fs) .video-drag-bar {
+    display: none !important;
+  }
+
+  .youtube-embed-container:not(.theater-mode):not(.native-fs) .video-resize-handle {
+    display: none !important;
+  }
+
+  /* Music Player Mobile Timeline progress bar */
+  .player-progress {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 4px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .player-progress .player-time {
+    display: none !important;
+  }
+
+  .player-progress .progress-bar {
+    height: 100% !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .player-progress .progress-fill {
+    border-radius: 0 !important;
+  }
+
+  /* Hide volume controls and YouTube button on mobile player */
+  .player-extra .volume-control,
+  .player-extra .player-youtube-btn {
+    display: none !important;
+  }
+
+  /* Align feature items on mobile to prevent staggered wrapping */
+  .feature-bar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 24px !important;
+    padding: 30px 24px !important;
+  }
+
+  /* Mobile Floating Action Buttons (FABs) */
+  .mobile-fabs {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+    position: fixed;
+    right: 16px;
+    bottom: 24px;
+    z-index: 4000;
+    transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .mobile-fabs.player-active {
+    bottom: 104px;
+    /* 80px player height + 24px spacing */
+  }
+
+  .fab-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    color: white;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+  }
+
+  .fab-btn.camera {
+    background: linear-gradient(135deg, #0984e3, #00cec9);
+  }
+
+  .fab-btn.assistant {
+    background: linear-gradient(135deg, #6c5ce7, #fd79a8);
+  }
+
+  .fab-btn:active {
+    transform: scale(0.92);
+  }
 }
 
 @media (max-width: 480px) {
@@ -2369,5 +2653,116 @@ body {
 
   .player-track-info {
     max-width: 150px;
+  }
+
+  /* Hide logo text on small screens to fit buttons */
+  .logo-text-top {
+    display: none !important;
+  }
+
+  /* Shrink auth buttons padding to prevent right overflow */
+  .top-auth-btn {
+    padding: 8px 14px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* ==================== PAGES (About & Settings) ==================== */
+.page-container {
+  padding: 120px 32px 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(2rem, 8vw, 3rem);
+  font-weight: 900;
+  margin-bottom: 24px;
+  color: var(--text-main);
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.2;
+}
+
+.page-title.static {
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+  color: var(--text-main);
+}
+
+.page-subtitle {
+  font-size: clamp(1rem, 4vw, 1.15rem);
+  color: var(--text-dim);
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+.page-card {
+  background: var(--bg-glass);
+  border-radius: 24px;
+  padding: clamp(20px, 5vw, 30px);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.page-card-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(1.25rem, 5vw, 1.5rem);
+  margin-bottom: 20px;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-card-list {
+  color: var(--text-main);
+  margin-bottom: 30px;
+  line-height: 1.6;
+  padding-left: 20px;
+  font-size: clamp(0.9rem, 3.5vw, 1rem);
+}
+
+.page-card-list li {
+  margin-bottom: 12px;
+}
+
+.page-card-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-card-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--bg-glass);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.page-card-link-btn:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.15);
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 110px 16px 120px;
+    /* Shift content down for mobile navbar and leave space for FABs/player at bottom */
   }
 }

@@ -218,6 +218,21 @@ const MusicPlayer = () => {
         return () => document.removeEventListener('fullscreenchange', handleFsChange);
     }, []);
 
+    useEffect(() => {
+        const handleResize = () => {
+            setVideoPos(prev => {
+                if (isTheaterMode || isNativeFullscreen) return prev;
+                const width = videoSize.width;
+                const height = videoSize.height;
+                const newX = Math.max(10, Math.min(window.innerWidth - width - 10, prev.x));
+                const newY = Math.max(10, Math.min(window.innerHeight - height - 100, prev.y));
+                return { x: newX, y: newY };
+            });
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [videoSize.width, videoSize.height, isTheaterMode, isNativeFullscreen]);
+
     const toggleNativeFullscreen = () => {
         if (!document.fullscreenElement) {
             containerRef.current?.requestFullscreen().catch(err => {
@@ -377,7 +392,7 @@ const MusicPlayer = () => {
                     <button className={`player-btn ${showVideo ? 'active' : ''}`} onClick={() => setShowVideo(!showVideo)} title="Toggle Video (V)">
                         <FiTv />
                     </button>
-                    <button className="player-btn" onClick={handleYouTube} title="Open in YouTube">
+                    <button className="player-btn player-youtube-btn" onClick={handleYouTube} title="Open in YouTube">
                         <FaYoutube />
                     </button>
                     <div className="volume-control" title={`Volume: ${volume}% (↑↓ to adjust, M to mute)`}>

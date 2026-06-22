@@ -317,8 +317,27 @@ const MoodCamera = () => {
                             animation: dotPulse 1.5s infinite ease-in-out;
                         }
 
-                        @keyframes hudPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
                         @keyframes dotPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
+
+                        @media (max-width: 768px) {
+                            .mood-split-container {
+                                flex-direction: column !important;
+                                width: 100vw !important;
+                                height: 100vh !important;
+                                max-width: 100vw !important;
+                                max-height: 100vh !important;
+                                border-radius: 0 !important;
+                                transform: scale(1) !important;
+                                animation: none !important;
+                            }
+                            .mood-info-side {
+                                display: none !important;
+                            }
+                            .mood-camera-side {
+                                padding: 20px !important;
+                                justify-content: center !important;
+                            }
+                        }
                     `}</style>
 
                     <div className="mood-split-container" onClick={e => e.stopPropagation()}>

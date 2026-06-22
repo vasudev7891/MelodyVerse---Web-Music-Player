@@ -145,7 +145,7 @@ const TopNavbar = ({ onToggleSidebar }) => {
             <nav className="top-nav">
                 {/* Row 1: Logo + Nav Links + Buttons */}
                 <div className="top-nav-inner">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div className="top-nav-left">
                         <button
                             className="top-nav-btn menu-toggle"
                             onClick={onToggleSidebar}
@@ -184,168 +184,171 @@ const TopNavbar = ({ onToggleSidebar }) => {
                         )}
                     </div>
 
-                    {/* Feature Buttons */}
-                    <div className="top-feature-btns">
-                        <button
-                            className={`top-nav-btn ${showMoodCamera ? 'active' : ''}`}
-                            onClick={() => setShowMoodCamera(true)}
-                            title="Mood Camera"
-                        >
-                            <FiCamera />
-                        </button>
-                        <button
-                            className={`top-nav-btn ${showAIAssistant ? 'active' : ''}`}
-                            onClick={() => setShowAIAssistant(true)}
-                            title="AI Assistant"
-                        >
-                            <FiMessageCircle />
-                        </button>
-                    </div>
+                    {/* Center: Search bar with live suggestions dropdown */}
+                    <div className="top-nav-center" ref={dropdownRef} style={{ position: 'relative' }}>
+                        <form className="top-nav-search" onSubmit={handleSearch}>
+                            <FiSearch className="top-search-icon" />
+                            <input
+                                ref={inputRef}
+                                type="text"
+                                placeholder="Search for songs, albums, artists..."
+                                value={searchQuery}
+                                onChange={handleInput}
+                                onFocus={() => { if (searchQuery.trim()) setShowDropdown(true); }}
+                                autoComplete="off"
+                            />
+                            {searchQuery && (
+                                <button
+                                    type="button"
+                                    onClick={() => { setSearchQuery(''); setShowDropdown(false); setVideoSuggestions([]); setTextSuggestions([]); inputRef.current?.focus(); }}
+                                    style={{ position: 'absolute', right: '16px', background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', display: 'flex', fontSize: '16px' }}
+                                >
+                                    <FiX />
+                                </button>
+                            )}
+                        </form>
 
-                    {/* Auth */}
-                    <div className="top-nav-auth">
-                        {user ? (
-                            <div style={{ position: 'relative' }}>
-                                <div className="top-user-avatar" onClick={() => setShowUserMenu(!showUserMenu)}>
-                                    {user.name?.charAt(0).toUpperCase()}
-                                </div>
-                                {showUserMenu && (
-                                    <div className="user-menu" style={{ top: '50px', right: '0' }}>
-                                        <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)', marginBottom: '4px' }}>
-                                            <div style={{ fontWeight: 600, fontSize: '14px' }}>{user.name}</div>
-                                            <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{user.email}</div>
+                        {/* Live Search Dropdown */}
+                        {showDropdown && hasDropdownContent && (
+                            <div className="search-live-dropdown">
+                                {/* Text suggestions */}
+                                {textSuggestions.length > 0 && (
+                                    <div className="search-dropdown-section">
+                                        <div className="search-dropdown-label">
+                                            <FiSearch size={11} /> Suggestions
                                         </div>
-                                        {user.role === 'admin' && (
-                                            <button className="user-menu-item" onClick={() => { navigate('/admin'); setShowUserMenu(false); }}>
-                                                <FiShield /> Admin Panel
-                                            </button>
-                                        )}
-                                        <button className="user-menu-item" onClick={() => { navigate('/favorites'); setShowUserMenu(false); }}>
-                                            <FiHeart /> Favorites
-                                        </button>
-                                        <button className="user-menu-item" onClick={() => { navigate('/time-machine'); setShowUserMenu(false); }}>
-                                            <FiClock /> Time Machine
-                                        </button>
-                                        <button className="user-menu-item danger" onClick={() => { logout(); setShowUserMenu(false); }}>
-                                            <FiLogOut /> Logout
-                                        </button>
+                                        {textSuggestions.map((sug, i) => (
+                                            <div
+                                                key={i}
+                                                className="search-text-suggestion"
+                                                onClick={() => handleSuggestionClick(sug)}
+                                            >
+                                                <FiSearch className="search-sug-icon" />
+                                                <span>{sug}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Divider if both sections exist */}
+                                {textSuggestions.length > 0 && (videoSuggestions.length > 0 || loadingVideos) && (
+                                    <div className="search-dropdown-divider" />
+                                )}
+
+                                {/* Video suggestions */}
+                                {(loadingVideos || videoSuggestions.length > 0) && (
+                                    <div className="search-dropdown-section">
+                                        <div className="search-dropdown-label">
+                                            <FiTrendingUp size={11} /> Videos
+                                        </div>
+                                        {loadingVideos && videoSuggestions.length === 0 ? (
+                                            <div className="search-dropdown-loading">
+                                                <div className="search-loading-dots">
+                                                    <span /><span /><span />
+                                                </div>
+                                                <span>Searching...</span>
+                                            </div>
+                                        ) : videoSuggestions.map((video, i) => (
+                                            <div
+                                                key={video.videoId}
+                                                className="search-video-suggestion"
+                                                onClick={() => handleVideoClick(video)}
+                                            >
+                                                <div className="search-vid-thumb">
+                                                    <img
+                                                        src={video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
+                                                        alt={video.title}
+                                                        onError={(e) => { e.target.src = `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`; }}
+                                                    />
+                                                    <div className="search-vid-play">▶</div>
+                                                </div>
+                                                <div className="search-vid-info">
+                                                    <div className="search-vid-title">{video.title}</div>
+                                                    <div className="search-vid-channel">{video.channelTitle}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Footer: search all results */}
+                                {searchQuery.trim() && (
+                                    <div
+                                        className="search-dropdown-footer"
+                                        onClick={() => handleSuggestionClick(searchQuery)}
+                                    >
+                                        <FiSearch size={13} />
+                                        Search all results for &ldquo;<strong>{searchQuery}</strong>&rdquo;
                                     </div>
                                 )}
                             </div>
-                        ) : (
-                            <>
-                                <button className="top-auth-btn login" onClick={() => openAuth('login')}>LOGIN</button>
-                                <button className="top-auth-btn register" onClick={() => openAuth('register')}>REGISTER</button>
-                            </>
                         )}
                     </div>
 
-                    {/* Mobile menu toggle */}
-                    <button className="mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-                        {mobileMenuOpen ? <FiX /> : <FiMenu />}
-                    </button>
-                </div>
-
-                {/* Row 2: Search bar with live suggestions dropdown */}
-                <div className="top-nav-search-row" ref={dropdownRef} style={{ position: 'relative' }}>
-                    <form className="top-nav-search" onSubmit={handleSearch}>
-                        <FiSearch className="top-search-icon" />
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            placeholder="Search for songs, albums, artists..."
-                            value={searchQuery}
-                            onChange={handleInput}
-                            onFocus={() => { if (searchQuery.trim()) setShowDropdown(true); }}
-                            autoComplete="off"
-                        />
-                        {searchQuery && (
+                    <div className="top-nav-right">
+                        {/* Feature Buttons */}
+                        <div className="top-feature-btns">
                             <button
-                                type="button"
-                                onClick={() => { setSearchQuery(''); setShowDropdown(false); setVideoSuggestions([]); setTextSuggestions([]); inputRef.current?.focus(); }}
-                                style={{ position: 'absolute', right: '16px', background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', display: 'flex', fontSize: '16px' }}
+                                className={`top-nav-btn ${showMoodCamera ? 'active' : ''}`}
+                                onClick={() => setShowMoodCamera(true)}
+                                title="Mood Camera"
                             >
-                                <FiX />
+                                <FiCamera />
                             </button>
-                        )}
-                    </form>
+                            <button
+                                className={`top-nav-btn ${showAIAssistant ? 'active' : ''}`}
+                                onClick={() => setShowAIAssistant(true)}
+                                title="AI Assistant"
+                            >
+                                <FiMessageCircle />
+                            </button>
+                        </div>
 
-                    {/* Live Search Dropdown */}
-                    {showDropdown && hasDropdownContent && (
-                        <div className="search-live-dropdown">
-                            {/* Text suggestions */}
-                            {textSuggestions.length > 0 && (
-                                <div className="search-dropdown-section">
-                                    <div className="search-dropdown-label">
-                                        <FiSearch size={11} /> Suggestions
+                        {/* Auth */}
+                        <div className="top-nav-auth">
+                            {user ? (
+                                <div style={{ position: 'relative' }}>
+                                    <div className="top-user-avatar" onClick={() => setShowUserMenu(!showUserMenu)}>
+                                        {user.name?.charAt(0).toUpperCase()}
                                     </div>
-                                    {textSuggestions.map((sug, i) => (
-                                        <div
-                                            key={i}
-                                            className="search-text-suggestion"
-                                            onClick={() => handleSuggestionClick(sug)}
-                                        >
-                                            <FiSearch className="search-sug-icon" />
-                                            <span>{sug}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Divider if both sections exist */}
-                            {textSuggestions.length > 0 && (videoSuggestions.length > 0 || loadingVideos) && (
-                                <div className="search-dropdown-divider" />
-                            )}
-
-                            {/* Video suggestions */}
-                            {(loadingVideos || videoSuggestions.length > 0) && (
-                                <div className="search-dropdown-section">
-                                    <div className="search-dropdown-label">
-                                        <FiTrendingUp size={11} /> Videos
-                                    </div>
-                                    {loadingVideos && videoSuggestions.length === 0 ? (
-                                        <div className="search-dropdown-loading">
-                                            <div className="search-loading-dots">
-                                                <span /><span /><span />
+                                    {showUserMenu && (
+                                        <div className="user-menu" style={{ top: '50px', right: '0' }}>
+                                            <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)', marginBottom: '4px' }}>
+                                                <div style={{ fontWeight: 600, fontSize: '14px' }}>{user.name}</div>
+                                                <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{user.email}</div>
                                             </div>
-                                            <span>Searching...</span>
+                                            {user.role === 'admin' && (
+                                                <button className="user-menu-item" onClick={() => { navigate('/admin'); setShowUserMenu(false); }}>
+                                                    <FiShield /> Admin Panel
+                                                </button>
+                                            )}
+                                            <button className="user-menu-item" onClick={() => { navigate('/favorites'); setShowUserMenu(false); }}>
+                                                <FiHeart /> Favorites
+                                            </button>
+                                            <button className="user-menu-item" onClick={() => { navigate('/time-machine'); setShowUserMenu(false); }}>
+                                                <FiClock /> Time Machine
+                                            </button>
+                                            <button className="user-menu-item danger" onClick={() => { logout(); setShowUserMenu(false); }}>
+                                                <FiLogOut /> Logout
+                                            </button>
                                         </div>
-                                    ) : videoSuggestions.map((video, i) => (
-                                        <div
-                                            key={video.videoId}
-                                            className="search-video-suggestion"
-                                            onClick={() => handleVideoClick(video)}
-                                        >
-                                            <div className="search-vid-thumb">
-                                                <img
-                                                    src={video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
-                                                    alt={video.title}
-                                                    onError={(e) => { e.target.src = `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`; }}
-                                                />
-                                                <div className="search-vid-play">▶</div>
-                                            </div>
-                                            <div className="search-vid-info">
-                                                <div className="search-vid-title">{video.title}</div>
-                                                <div className="search-vid-channel">{video.channelTitle}</div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                    )}
                                 </div>
-                            )}
-
-                            {/* Footer: search all results */}
-                            {searchQuery.trim() && (
-                                <div
-                                    className="search-dropdown-footer"
-                                    onClick={() => handleSuggestionClick(searchQuery)}
-                                >
-                                    <FiSearch size={13} />
-                                    Search all results for &ldquo;<strong>{searchQuery}</strong>&rdquo;
-                                </div>
+                            ) : (
+                                <>
+                                    <button className="top-auth-btn login" onClick={() => openAuth('login')}>LOGIN</button>
+                                    <button className="top-auth-btn register" onClick={() => openAuth('register')}>REGISTER</button>
+                                </>
                             )}
                         </div>
-                    )}
+
+                        {/* Mobile menu toggle */}
+                        <button className="mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                            {mobileMenuOpen ? <FiX /> : <FiMenu />}
+                        </button>
+                    </div>
                 </div>
+
 
                 {/* Mobile dropdown nav links */}
                 {mobileMenuOpen && (

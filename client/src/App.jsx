@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useMusic } from './context/MusicContext';
+import { FiCamera, FiMessageCircle } from 'react-icons/fi';
 import TopNavbar from './components/TopNavbar';
 import Sidebar from './components/Sidebar';
 import MusicPlayer from './components/MusicPlayer';
@@ -26,7 +27,7 @@ const MAX_SIDEBAR = 400;
 const DEFAULT_SIDEBAR = 240;
 
 function App() {
-  const { showPlayer } = useMusic();
+  const { showPlayer, setShowMoodCamera, setShowAIAssistant, showMoodCamera, showAIAssistant } = useMusic();
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth > 768);
   const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR);
   const isResizing = useRef(false);
@@ -109,6 +110,25 @@ function App() {
         {showPlayer && <MusicPlayer />}
         <MoodCamera />
         <AIAssistant />
+
+        {/* Mobile Floating Action Buttons */}
+        <div className={`mobile-fabs ${showPlayer ? 'player-active' : ''}`}>
+            <button
+                className={`fab-btn camera ${showMoodCamera ? 'active' : ''}`}
+                onClick={() => setShowMoodCamera(true)}
+                title="Mood Camera"
+            >
+                <FiCamera />
+            </button>
+            <button
+                className={`fab-btn assistant ${showAIAssistant ? 'active' : ''}`}
+                onClick={() => setShowAIAssistant(true)}
+                title="AI Assistant"
+            >
+                <FiMessageCircle />
+            </button>
+        </div>
+
         <Toaster position="bottom-right" toastOptions={{ className: 'toast-custom', duration: 3000 }} />
       </div>
     </div>

@@ -823,3 +823,9 @@
 .search-dropdown-footer strong {
   color: var(--text-main);
 }
+
+@media (max-width: 480px) {
+  .ai-chat-window {
+    width: 100vw !important;
+  }
+}
