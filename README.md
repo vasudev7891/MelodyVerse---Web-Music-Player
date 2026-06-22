@@ -1,5 +1,7 @@
 # 🎵 MelodyVerse - Music Streaming Platform
 
+🌐 **Live Link:** [https://melodyverse-web-music-player.onrender.com/](https://melodyverse-web-music-player.onrender.com/)
+
 MelodyVerse is a full-stack, responsive music streaming web application. It features real-time search (powered by the YouTube Data API), a beautiful and dynamic user interface, secure user authentication with JWT, and an intuitive custom audio player.
 
 ## 🚀 Features
