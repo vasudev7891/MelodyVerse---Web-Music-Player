@@ -5,6 +5,9 @@ import { useMusic } from '../context/MusicContext';
 import { searchMusic } from '../services/api';
 import toast from 'react-hot-toast';
 
+// Module-level flag: models persist in memory once loaded, no need to re-fetch on every mount
+let modelsLoadedGlobal = false;
+
 const MOODS = {
     happy: {
         emoji: '😃',
@@ -54,13 +57,6 @@ const MOODS = {
         color: '#00b894',
         suggestion: 'Some fresh, uplifting music to brighten your mood!',
         queries: ['mood booster songs', 'motivational music', 'inspiring songs playlist', 'uplifting bollywood songs']
-    },
-    romantic: {
-        emoji: '🥰',
-        label: 'Feeling Romantic!',
-        color: '#fd79a8',
-        suggestion: 'Love is in the air! Playing romantic melodies...',
-        queries: ['romantic love songs', 'romantic bollywood songs', 'love songs playlist', 'romantic hindi songs']
     }
 };
 
@@ -71,15 +67,18 @@ const MoodCamera = () => {
     const [scanning, setScanning] = useState(false);
     const [moodSongs, setMoodSongs] = useState([]);
     const [countdown, setCountdown] = useState(null);
-    const [modelsLoaded, setModelsLoaded] = useState(false);
+    const [modelsLoaded, setModelsLoaded] = useState(modelsLoadedGlobal);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
+    const streamRef = useRef(null);      // Ref mirrors stream state to avoid stale closures
+    const scanningRef = useRef(false);   // Guard against rapid double-click scanning
 
-    const startCamera = async () => {
+    const startCamera = useCallback(async () => {
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'user', width: 400, height: 300 }
             });
+            streamRef.current = mediaStream;
             setStream(mediaStream);
             if (videoRef.current) {
                 videoRef.current.srcObject = mediaStream;
@@ -88,51 +87,71 @@ const MoodCamera = () => {
             toast.error('Camera access denied. Please allow camera permissions.');
             console.error('Camera error:', err);
         }
-    };
+    }, []);
 
-    const stopCamera = () => {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
+    const stopCamera = useCallback(() => {
+        // Always read from ref to get the latest stream (avoids stale closure)
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
             setStream(null);
         }
-    };
+    }, []);
 
     useEffect(() => {
-        const loadModels = async () => {
-            try {
-                // Models are loaded locally from the public folder
-                await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-                await faceapi.nets.faceExpressionNet.loadFromUri('/models');
-                setModelsLoaded(true);
-            } catch (error) {
-                console.error("Error loading face-api models:", error);
-                toast.error("Failed to load mood detection models.");
-            }
-        };
-
         if (isOpen) {
-            loadModels().then(() => startCamera());
+            const init = async () => {
+                // Only load models once across the app lifetime
+                if (!modelsLoadedGlobal) {
+                    try {
+                        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+                        await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+                        modelsLoadedGlobal = true;
+                        setModelsLoaded(true);
+                    } catch (error) {
+                        console.error("Error loading face-api models:", error);
+                        toast.error("Failed to load mood detection models.");
+                        return;
+                    }
+                } else {
+                    setModelsLoaded(true);
+                }
+                await startCamera();
+            };
+            init();
         } else {
             stopCamera();
             setMood(null);
             setMoodSongs([]);
             setScanning(false);
-            setModelsLoaded(false);
+            scanningRef.current = false;
+            speechSynthesis.cancel(); // Stop any ongoing speech when modal closes
         }
-        return () => stopCamera();
-    }, [isOpen]);
+        return () => {
+            stopCamera();
+            speechSynthesis.cancel();
+        };
+    }, [isOpen, startCamera, stopCamera]);
 
-    // Re-attach stream whenever the video element re-mounts (e.g., after clicking Rescan)
+    // Re-attach stream to the video element (e.g., after React re-renders)
     useEffect(() => {
-        if (stream && videoRef.current && !mood) {
-            videoRef.current.srcObject = stream;
+        if (streamRef.current && videoRef.current) {
+            videoRef.current.srcObject = streamRef.current;
         }
     }, [stream, mood]);
 
     // Analyze the video frame for mood detection using face-api.js
+    // Uses multi-frame sampling to overcome the model's neutral bias
     const analyzeMood = useCallback(async () => {
-        if (!videoRef.current || !modelsLoaded) return;
+        if (!videoRef.current || !modelsLoaded || scanningRef.current) return;
 
+        // Ensure the video is actually playing with valid frame data
+        if (videoRef.current.readyState < 2) {
+            toast.error("Camera is still initializing. Please wait a moment and try again.");
+            return;
+        }
+
+        scanningRef.current = true;
         setScanning(true);
         setCountdown(3);
 
@@ -144,50 +163,103 @@ const MoodCamera = () => {
         setCountdown(null);
 
         try {
-            // Detect face and expressions
-            const detection = await faceapi.detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+            // ── Multi-frame sampling for accurate expression detection ──
+            // A single frame often returns neutral. Sampling 5 frames over ~1.5s
+            // and averaging the scores gives much more reliable results.
+            const SAMPLE_COUNT = 5;
+            const SAMPLE_DELAY_MS = 300;
+            const expressionTotals = {};
+            let successfulSamples = 0;
+
+            const detectorOptions = new faceapi.TinyFaceDetectorOptions({
+                inputSize: 320,        // Slightly smaller = faster per-frame, still accurate
+                scoreThreshold: 0.3    // Lower threshold so faces are detected more reliably
+            });
+
+            for (let s = 0; s < SAMPLE_COUNT; s++) {
+                try {
+                    const detection = await faceapi.detectSingleFace(videoRef.current, detectorOptions)
+                        .withFaceExpressions();
+
+                    if (detection && detection.expressions) {
+                        successfulSamples++;
+                        for (const [expr, score] of Object.entries(detection.expressions)) {
+                            expressionTotals[expr] = (expressionTotals[expr] || 0) + score;
+                        }
+                    }
+                } catch (frameErr) {
+                    // Individual frame failures are tolerated; we continue sampling
+                    console.warn(`Sample ${s + 1} failed:`, frameErr);
+                }
+
+                // Wait between samples (except after the last one)
+                if (s < SAMPLE_COUNT - 1) {
+                    await new Promise(r => setTimeout(r, SAMPLE_DELAY_MS));
+                }
+            }
 
             let detectedMood = 'neutral';
 
-            if (detection && detection.expressions) {
-                // Get highest probability expression
-                const expressions = detection.expressions;
-                const topExpression = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
+            if (successfulSamples > 0) {
+                // Average the accumulated scores
+                const averaged = {};
+                for (const [expr, total] of Object.entries(expressionTotals)) {
+                    averaged[expr] = total / successfulSamples;
+                }
 
-                // Map face-api expressions to our custom MOODS
-                // face-api returns: neutral, happy, sad, angry, fearful, disgusted, surprised
-                if (topExpression === 'sad' || topExpression === 'fearful') {
-                    detectedMood = topExpression;
-                } else if (topExpression === 'disgusted') {
-                    detectedMood = 'disgusted';
-                } else if (topExpression === 'happy' || topExpression === 'surprised' || topExpression === 'angry') {
+                // Sort expressions by averaged confidence
+                const sorted = Object.entries(averaged).sort((a, b) => b[1] - a[1]);
+                const [topExpression, topScore] = sorted[0];
+
+                // ── Neutral-bias correction ──
+                // face-api.js frequently returns neutral as the top expression even when
+                // the user is clearly showing emotion. If neutral wins, check whether the
+                // strongest *non-neutral* expression has meaningful confidence (≥ 12%).
+                if (topExpression === 'neutral' && sorted.length > 1) {
+                    const bestNonNeutral = sorted.find(([expr]) => expr !== 'neutral');
+                    if (bestNonNeutral) {
+                        const [altExpr, altScore] = bestNonNeutral;
+                        if (altScore >= 0.12 && MOODS[altExpr]) {
+                            detectedMood = altExpr;
+                        }
+                        // else: truly neutral — keep default
+                    }
+                } else if (MOODS[topExpression]) {
                     detectedMood = topExpression;
                 }
             } else {
-                toast.error("Couldn't clearly detect a face. Defaulting to neutral.");
+                toast.error("Couldn't detect a face in any frame. Ensure good lighting and face the camera.");
             }
 
             setMood(detectedMood);
             setScanning(false);
+            scanningRef.current = false;
 
-            // Speak the result
+            // Speak the result — uses the ACTUAL detected mood consistently
             const moodData = MOODS[detectedMood];
+            speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(
-                `I can see you're feeling ${Object.values(detection?.expressions || {}).some(val => val > 0.5) ? detectedMood : 'neutral'}. ${moodData.suggestion}`
+                `I can see you're feeling ${moodData.label}. ${moodData.suggestion}`
             );
             utterance.rate = 1;
             utterance.pitch = 1.1;
             speechSynthesis.speak(utterance);
 
-            // Fetch mood-based songs
-            const randomQuery = moodData.queries[Math.floor(Math.random() * moodData.queries.length)];
-            const res = await searchMusic(randomQuery);
-            setMoodSongs(res.data.videos || []);
+            // Fetch mood-based songs — separate try/catch so detection success isn't masked
+            try {
+                const randomQuery = moodData.queries[Math.floor(Math.random() * moodData.queries.length)];
+                const res = await searchMusic(randomQuery);
+                setMoodSongs(res.data.videos || []);
+            } catch (songError) {
+                console.error("Failed to fetch mood songs:", songError);
+                toast.error("Mood detected successfully, but couldn't load songs. Please try again.");
+            }
 
         } catch (error) {
             console.error("Face detection failed:", error);
             setScanning(false);
-            toast.error("Detection failed.");
+            scanningRef.current = false;
+            toast.error("Face detection failed. Ensure your camera is working and you're well-lit.");
         }
     }, [modelsLoaded]);
 
@@ -197,6 +269,12 @@ const MoodCamera = () => {
             toast.success(`🎵 Now playing ${mood} mood music!`);
             setIsOpen(false);
         }
+    };
+
+    const handleRescan = () => {
+        setMood(null);
+        setMoodSongs([]);
+        speechSynthesis.cancel();
     };
 
     const moodData = mood ? MOODS[mood] : null;
@@ -319,6 +397,21 @@ const MoodCamera = () => {
 
                         @keyframes dotPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
 
+                        @keyframes scaleUp {
+                            from { transform: scale(0.95); opacity: 0; }
+                            to { transform: scale(1); opacity: 1; }
+                        }
+
+                        @keyframes fadeIn {
+                            from { opacity: 0; transform: translateY(10px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+
+                        @keyframes hudPulse {
+                            0%, 100% { box-shadow: inset 0 0 50px rgba(0, 206, 201, 0.2); border-color: #00cec9; }
+                            50% { box-shadow: inset 0 0 80px rgba(0, 206, 201, 0.4); border-color: #55efc4; }
+                        }
+
                         @media (max-width: 768px) {
                             .mood-split-container {
                                 flex-direction: column !important;
@@ -382,40 +475,39 @@ const MoodCamera = () => {
                                 <FiX />
                             </button>
 
-                            {!moodData ? (
-                                <>
-                                    <div className="camera-frame">
-                                        <video 
-                                            ref={videoRef} 
-                                            autoPlay 
-                                            playsInline 
-                                            muted 
-                                            style={{ filter: scanning ? 'blur(4px) grayscale(40%) contrast(1.2)' : 'none', transition: 'filter 0.5s ease' }} 
-                                        />
-                                        
-                                        {scanning && (
-                                            <>
-                                                <div className="scanning-grid" />
-                                                <div className="neural-overlay" />
-                                                <div className="scanning-hud" />
-                                                <div className="scanner-line" />
-                                                <div className="scanning-status-card">
-                                                    <div className="thinking-dot" />
-                                                    <span>{countdown ? `Identifying Pose... ${countdown}` : "Neural Vectors: Mapping Expressions..."}</span>
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
+                            {/* Camera frame — ALWAYS in the DOM to prevent stream detachment on rescan */}
+                            <div className="camera-frame" style={{ display: moodData ? 'none' : '' }}>
+                                <video 
+                                    ref={videoRef} 
+                                    autoPlay 
+                                    playsInline 
+                                    muted 
+                                    style={{ filter: scanning ? 'blur(4px) grayscale(40%) contrast(1.2)' : 'none', transition: 'filter 0.5s ease' }} 
+                                />
+                                
+                                {scanning && (
+                                    <>
+                                        <div className="scanning-grid" />
+                                        <div className="neural-overlay" />
+                                        <div className="scanning-hud" />
+                                        <div className="scanner-line" />
+                                        <div className="scanning-status-card">
+                                            <div className="thinking-dot" />
+                                            <span>{countdown ? `Identifying Pose... ${countdown}` : "Neural Vectors: Mapping Expressions..."}</span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
 
-                                    <button
-                                        className="modern-mood-btn"
-                                        onClick={analyzeMood}
-                                        disabled={scanning || !stream}
-                                        style={{ background: scanning ? 'rgba(0, 206, 201, 0.1)' : '', borderColor: scanning ? '#00cec9' : '' }}
-                                    >
-                                        {scanning ? <><FiRefreshCw className="spin-icon" /> Neural Processing...</> : <><FiCamera /> Initialize Scan</>}
-                                    </button>
-                                </>
+                            {!moodData ? (
+                                <button
+                                    className="modern-mood-btn"
+                                    onClick={analyzeMood}
+                                    disabled={scanning || !stream}
+                                    style={{ background: scanning ? 'rgba(0, 206, 201, 0.1)' : '', borderColor: scanning ? '#00cec9' : '' }}
+                                >
+                                    {scanning ? <><FiRefreshCw className="spin-icon" /> Neural Processing...</> : <><FiCamera /> Initialize Scan</>}
+                                </button>
                             ) : (
                                 <div className="mood-result-card" style={{ boxShadow: `0 0 40px ${moodData.color}22`, borderColor: `${moodData.color}55` }}>
                                     <div style={{ textAlign: 'center', marginBottom: '25px' }}>
@@ -445,7 +537,7 @@ const MoodCamera = () => {
                                     <button className="modern-mood-btn" onClick={playMoodMusic} style={{ background: `linear-gradient(135deg, ${moodData.color}, ${moodData.color}dd)` }}>
                                         <FiPlay /> Launch Playlist
                                     </button>
-                                    <button className="modern-mood-btn rescan" onClick={() => { setMood(null); setMoodSongs([]); }}>
+                                    <button className="modern-mood-btn rescan" onClick={handleRescan}>
                                         <FiRefreshCw /> Rescan Again
                                     </button>
                                 </div>
