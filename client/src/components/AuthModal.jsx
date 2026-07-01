@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { FiX, FiMail, FiLock, FiUser, FiArrowRight } from 'react-icons/fi';
+import { FiX, FiMail, FiUser, FiArrowRight } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
+import PasswordStrength from './PasswordStrength';
 import toast from 'react-hot-toast';
 
 const AuthModal = ({ mode, onClose, onSwitchMode }) => {
@@ -9,6 +10,13 @@ const AuthModal = ({ mode, onClose, onSwitchMode }) => {
     const [loading, setLoading] = useState(false);
     const { login, register } = useAuth();
     const isLogin = mode === 'login';
+
+    const handleToggle = () => {
+        const nextMode = isLogin ? 'register' : 'login';
+        setError('');
+        setFormData({ name: '', email: '', password: '' });
+        onSwitchMode(nextMode);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -34,144 +42,530 @@ const AuthModal = ({ mode, onClose, onSwitchMode }) => {
         <div className="modern-auth-overlay" onClick={onClose}>
             <style>{`
                 .modern-auth-overlay {
+                    --gradient: linear-gradient(135deg, rgba(108, 92, 231, 0.85), rgba(253, 121, 168, 0.85));
+                    --bg-dark: #07070a;
+                    --surface: #12121a;
+                    --text: #f8f8fb;
+                    --text-dim: #a0a0b0;
+                    --duration: 0.6s;
+                    --easing: cubic-bezier(0.16, 1, 0.3, 1);
+                    --easing-panel: cubic-bezier(0.65, 0, 0.35, 1);
+
                     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-                    background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
+                    background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
                     display: flex; align-items: center; justify-content: center; z-index: 10000;
                     animation: fadeIn 0.3s ease;
                 }
-                .modern-auth-container {
-                    display: flex; width: 900px; height: 550px;
-                    background: rgba(13, 13, 18, 0.95); border-radius: 24px;
-                    border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-                    overflow: hidden; position: relative;
-                    transform: scale(0.95); animation: scaleUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                }
-                .auth-side-graphic {
-                    flex: 1; background: linear-gradient(135deg, rgba(108, 92, 231, 0.8), rgba(253, 121, 168, 0.8)), url('https://images.unsplash.com/photo-1614149162883-504ce4d13909?q=80&w=1000&auto=format&fit=crop');
-                    background-size: cover; background-position: center; position: relative;
-                    display: flex; flex-direction: column; justify-content: flex-end; padding: 40px; color: white;
-                }
-                .auth-side-graphic::after {
-                    content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(7,7,10,0.9), transparent);
-                }
-                .auth-graphic-content { position: relative; z-index: 10; }
-                .auth-graphic-content h2 { font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 12px; }
-                .auth-graphic-content p { font-size: 1rem; color: rgba(255, 255, 255, 0.8); }
-                
-                .auth-form-wrapper {
-                    flex: 1; padding: 60px 50px; display: flex; flex-direction: column; justify-content: center; position: relative;
-                }
-                .modern-close-btn {
-                    position: absolute; top: 20px; right: 20px; width: 40px; height: 40px;
-                    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%;
-                    color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s;
-                }
-                .modern-close-btn:hover { background: rgba(255, 71, 87, 0.2); border-color: #ff4757; color: #ff4757; transform: rotate(90deg); }
-                
-                .auth-header { margin-bottom: 30px; }
-                .auth-header h3 { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #6c5ce7, #fd79a8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
-                .auth-header p { font-size: 0.9rem; color: #a0a0b0; }
-                
-                .modern-input-group { position: relative; margin-bottom: 20px; }
-                .modern-input-icon { position: absolute; top: 50%; left: 16px; transform: translateY(-50%); color: #6b6b80; font-size: 18px; transition: 0.3s; }
-                .modern-input {
-                    width: 100%; padding: 16px 16px 16px 48px; background: rgba(255, 255, 255, 0.03);
-                    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; color: white; font-family: 'Inter', sans-serif;
-                    font-size: 15px; transition: 0.3s; outline: none;
-                }
-                .modern-input:focus { background: rgba(255, 255, 255, 0.08); border-color: #6c5ce7; box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1); }
-                .modern-input:focus + .modern-input-icon { color: #6c5ce7; }
-                
-                .modern-submit-btn {
-                    width: 100%; padding: 16px; border-radius: 16px; border: none; background: linear-gradient(135deg, #6c5ce7, #fd79a8);
-                    color: white; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 16px; cursor: pointer;
-                    display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; margin-top: 10px; box-shadow: 0 10px 25px rgba(108, 92, 231, 0.3);
-                }
-                .modern-submit-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(108, 92, 231, 0.4); }
-                .modern-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-                
-                .auth-switch { text-align: center; margin-top: 24px; font-size: 0.9rem; color: #a0a0b0; }
-                .auth-switch span { color: #fd79a8; font-weight: 600; cursor: pointer; transition: 0.3s; margin-left: 5px; }
-                .auth-switch span:hover { color: #6c5ce7; text-decoration: underline; }
-                
-                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-                @keyframes scaleUp { to { transform: scale(1); } }
 
-                @media (max-width: 950px) {
-                    .modern-auth-container {
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+                .card {
+                    position: relative;
+                    width: 660px;
+                    height: 440px;
+                    overflow: hidden;
+                    border-radius: 24px;
+                    background: var(--surface);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+                    transform: scale(0.95);
+                    animation: scaleUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+                }
+
+                .toggle {
+                    display: none;
+                }
+
+                .card-bg {
+                    position: absolute;
+                    inset: 0 auto 0 0;
+                    z-index: 2;
+                    width: 50%;
+                    background: var(--gradient), url('https://images.unsplash.com/photo-1614149162883-504ce4d13909?q=80&w=1000&auto=format&fit=crop');
+                    background-size: cover;
+                    background-position: center;
+                    transition: var(--duration) var(--easing-panel);
+                }
+
+                .toggle:checked ~ .card-bg {
+                    translate: 100% 0;
+                }
+
+                .hero,
+                .form {
+                    position: absolute;
+                    width: 50%;
+                    height: 100%;
+                    opacity: 0;
+                    visibility: hidden;
+                    transition: var(--duration) var(--easing-panel);
+                }
+
+                .hero.signup,
+                .form.signup {
+                    opacity: 1;
+                    visibility: visible;
+                    translate: 0;
+                }
+
+                .hero.signin,
+                .form.signup {
+                    left: 50%;
+                }
+
+                .hero.signin {
+                    translate: 25% 0;
+                }
+
+                .form.signin {
+                    translate: 50% 0;
+                }
+
+                .toggle:checked ~ .hero.signup {
+                    opacity: 0;
+                    visibility: hidden;
+                    translate: -25% 0;
+                }
+
+                .toggle:checked ~ .hero.signin,
+                .toggle:checked ~ .form.signin {
+                    opacity: 1;
+                    visibility: visible;
+                    translate: 0;
+                }
+
+                .toggle:checked ~ .form.signup {
+                    opacity: 0;
+                    visibility: hidden;
+                    translate: -50% 0;
+                }
+
+                .hero {
+                    z-index: 3;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 16px;
+                    padding: 0 28px;
+                    color: #fff;
+                    text-align: center;
+                }
+
+                .hero h2 {
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: 800;
+                    font-family: 'Outfit', sans-serif;
+                    letter-spacing: -0.02em;
+                    line-height: 1.2;
+                }
+
+                .hero p {
+                    margin: 0 0 4px;
+                    font-size: 13px;
+                    line-height: 1.5;
+                    opacity: 0.85;
+                    font-family: 'Inter', sans-serif;
+                }
+
+                .hero label {
+                    padding: 10px 36px;
+                    border: 1.5px solid rgba(255, 255, 255, 0.6);
+                    border-radius: 32px;
+                    background: transparent;
+                    font-size: 12px;
+                    font-weight: 700;
+                    transition: 0.25s var(--easing);
+                    cursor: pointer;
+                    display: inline-block;
+                    letter-spacing: 0.05em;
+                }
+
+                .hero label:hover {
+                    background: rgba(255, 255, 255, 0.15);
+                    border-color: #fff;
+                }
+
+                /* Close Button Styling */
+                .modern-close-btn {
+                    position: absolute;
+                    top: 16px;
+                    right: 16px;
+                    width: 36px;
+                    height: 36px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 50%;
+                    color: #fff;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: 0.3s;
+                    z-index: 100;
+                }
+
+                .modern-close-btn:hover {
+                    background: rgba(255, 71, 87, 0.2);
+                    border-color: #ff4757;
+                    color: #ff4757;
+                    transform: rotate(90deg);
+                }
+
+                /* Form Layout Styling */
+                .form {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    padding: 0 40px;
+                    z-index: 1;
+                }
+
+                .form h2 {
+                    margin: 0 0 4px 0;
+                    font-size: 24px;
+                    font-weight: 800;
+                    font-family: 'Outfit', sans-serif;
+                    color: var(--text);
+                    text-align: center;
+                }
+
+                .form-subtitle {
+                    font-size: 13px;
+                    color: var(--text-dim);
+                    text-align: center;
+                    margin-bottom: 24px;
+                    font-family: 'Inter', sans-serif;
+                }
+
+                .form-group {
+                    position: relative;
+                    margin-bottom: 14px;
+                    width: 100%;
+                }
+
+                .form-input-wrapper {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                }
+
+                .form-input-icon {
+                    position: absolute;
+                    left: 14px;
+                    color: var(--text-dim);
+                    font-size: 16px;
+                }
+
+                .form-input {
+                    width: 100%;
+                    padding: 12px 12px 12px 42px;
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 12px;
+                    color: #fff;
+                    font-family: 'Inter', sans-serif;
+                    font-size: 14px;
+                    transition: 0.25s;
+                    outline: none;
+                }
+
+                .form-input:focus {
+                    border-color: #6c5ce7;
+                    background: rgba(255, 255, 255, 0.06);
+                    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+                }
+
+                .form-submit-btn {
+                    width: 100%;
+                    padding: 12px;
+                    border-radius: 12px;
+                    border: none;
+                    background: linear-gradient(135deg, #6c5ce7, #fd79a8);
+                    color: white;
+                    font-family: 'Inter', sans-serif;
+                    font-weight: 700;
+                    font-size: 14px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    transition: 0.25s;
+                    margin-top: 6px;
+                    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+                }
+
+                .form-submit-btn:hover:not(:disabled) {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 25px rgba(108, 92, 231, 0.4);
+                }
+
+                .form-submit-btn:disabled {
+                    opacity: 0.7;
+                    cursor: not-allowed;
+                }
+
+                .form-error {
+                    color: #ff4757;
+                    font-size: 0.8rem;
+                    margin-bottom: 10px;
+                    padding: 8px 12px;
+                    background: rgba(255, 71, 87, 0.08);
+                    border-radius: 8px;
+                    border-left: 3px solid #ff4757;
+                }
+
+                .mobile-switch-text {
+                    display: none;
+                }
+
+                @media (max-width: 768px) {
+                    .card {
                         width: 90% !important;
-                        max-width: 420px !important;
-                        height: auto !important;
-                        max-height: 90vh !important;
-                        flex-direction: column !important;
+                        max-width: 380px !important;
+                        height: 600px !important;
+                        display: block !important;
+                        padding: 0 !important;
+                        overflow: hidden !important;
                     }
-                    .auth-side-graphic {
+                    
+                    .card-bg {
+                        width: 100% !important;
+                        height: 40% !important;
+                        inset: 0 0 auto 0 !important;
+                        transition: var(--duration) var(--easing-panel) !important;
+                    }
+                    
+                    .toggle:checked ~ .card-bg {
+                        translate: 0 150% !important;
+                    }
+                    
+                    .hero {
+                        width: 100% !important;
+                        height: 40% !important;
+                        left: 0 !important;
+                        padding: 20px !important;
+                    }
+                    
+                    .form {
+                        width: 100% !important;
+                        height: 60% !important;
+                        left: 0 !important;
+                        padding: 30px 24px !important;
+                    }
+                    
+                    /* Layout coordinates for non-active positions */
+                    .hero.signin {
+                        top: 60% !important;
+                        translate: 0 25% !important;
+                    }
+                    
+                    .form.signup {
+                        top: 40% !important;
+                    }
+                    
+                    .form.signin {
+                        top: 0 !important;
+                        translate: 0 50% !important;
+                    }
+                    
+                    .hero.signup {
+                        top: 0 !important;
+                    }
+                    
+                    /* Checked state transitions */
+                    .toggle:checked ~ .hero.signup {
+                        opacity: 0 !important;
+                        visibility: hidden !important;
+                        translate: 0 -25% !important;
+                    }
+                    
+                    .toggle:checked ~ .form.signup {
+                        opacity: 0 !important;
+                        visibility: hidden !important;
+                        translate: 0 -50% !important;
+                    }
+                    
+                    .toggle:checked ~ .hero.signin,
+                    .toggle:checked ~ .form.signin {
+                        opacity: 1 !important;
+                        visibility: visible !important;
+                        translate: 0 !important;
+                    }
+                    
+                    /* Form adjustment on mobile */
+                    .form h2 {
+                        font-size: 20px !important;
+                        margin-bottom: 2px !important;
+                    }
+                    .form-subtitle {
+                        font-size: 12px !important;
+                        margin-bottom: 12px !important;
+                    }
+                    .form-group {
+                        margin-bottom: 10px !important;
+                    }
+                    .form-input {
+                        padding: 10px 12px 10px 38px !important;
+                        font-size: 13px !important;
+                    }
+                    .form-submit-btn {
+                        padding: 10px !important;
+                        font-size: 13px !important;
+                        margin-top: 4px !important;
+                    }
+                    .mobile-switch-text {
                         display: none !important;
                     }
-                    .auth-form-wrapper {
-                        padding: 40px 24px !important;
-                    }
+
+                    /* Dynamically swap close button style to remain legible on mobile top panel */
                     .modern-close-btn {
-                        top: 16px !important;
-                        right: 16px !important;
-                        width: 36px !important;
-                        height: 36px !important;
+                        color: #fff !important;
+                        background: rgba(255, 255, 255, 0.15) !important;
+                        border-color: rgba(255, 255, 255, 0.25) !important;
+                    }
+                    
+                    .toggle:checked ~ .modern-close-btn {
+                        color: var(--text) !important;
+                        background: rgba(0, 0, 0, 0.05) !important;
+                        border-color: rgba(0, 0, 0, 0.1) !important;
+                    }
+                    
+                    .toggle:checked ~ .modern-close-btn:hover {
+                        background: rgba(255, 71, 87, 0.1) !important;
+                        border-color: #ff4757 !important;
+                        color: #ff4757 !important;
                     }
                 }
             `}</style>
 
-            <div className="modern-auth-container" onClick={e => e.stopPropagation()}>
-                {/* Left Side: Graphic (always on left) */}
-                <div className="auth-side-graphic">
-                    <div className="auth-graphic-content">
-                        <h2>{isLogin ? 'Welcome Back.' : 'Start Listening.'}</h2>
-                        <p>{isLogin ? 'Log in to access your curated playlists, top tracks, and personal history.' : 'Join the fastest-growing next-generation music streaming community today.'}</p>
-                    </div>
+            <div className="card" onClick={e => e.stopPropagation()}>
+                <input
+                    type="checkbox"
+                    id="auth-toggle"
+                    className="toggle"
+                    checked={isLogin}
+                    onChange={handleToggle}
+                />
+                <div className="card-bg"></div>
+
+                <button className="modern-close-btn" onClick={onClose} aria-label="Close modal"><FiX /></button>
+
+                {/* Heroes (Graphic Panels overlaying card-bg) */}
+                <div className="hero signup">
+                    <h2>Welcome Back.</h2>
+                    <p>Log in to access your curated playlists, top tracks, and personal history.</p>
+                    <label htmlFor="auth-toggle">SIGN IN</label>
                 </div>
 
-                {/* Right Side: Form */}
-                <div className="auth-form-wrapper">
-                    <button className="modern-close-btn" onClick={onClose}><FiX /></button>
+                <div className="hero signin">
+                    <h2>Start Listening.</h2>
+                    <p>Join the fastest-growing next-generation music streaming community today.</p>
+                    <label htmlFor="auth-toggle">SIGN UP</label>
+                </div>
+
+                {/* Forms */}
+                <form onSubmit={handleSubmit} className="form signup">
+                    <h2>Create Account</h2>
+                    <div className="form-subtitle">Takes less than 30 seconds.</div>
                     
-                    <div className="auth-header">
-                        <h3>{isLogin ? 'Sign In' : 'Create Account'}</h3>
-                        <p>{isLogin ? 'Let the music play!' : 'Takes less than 30 seconds.'}</p>
+                    <div className="form-group">
+                        <div className="form-input-wrapper">
+                            <FiUser className="form-input-icon" />
+                            <input
+                                className="form-input"
+                                type="text"
+                                placeholder="Full Name"
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                disabled={isLogin}
+                                required={!isLogin}
+                            />
+                        </div>
                     </div>
 
-                    <form onSubmit={handleSubmit}>
-                        {!isLogin && (
-                            <div className="modern-input-group">
-                                <input className="modern-input" type="text" placeholder="Full Name" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
-                                <FiUser className="modern-input-icon" />
-                            </div>
-                        )}
-                        <div className="modern-input-group">
-                            <input className="modern-input" type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required />
-                            <FiMail className="modern-input-icon" />
+                    <div className="form-group">
+                        <div className="form-input-wrapper">
+                            <FiMail className="form-input-icon" />
+                            <input
+                                className="form-input"
+                                type="email"
+                                placeholder="Email Address"
+                                value={formData.email}
+                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                disabled={isLogin}
+                                required={!isLogin}
+                            />
                         </div>
-                        <div className="modern-input-group">
-                            <input className="modern-input" type="password" placeholder="Password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required minLength={6} />
-                            <FiLock className="modern-input-icon" />
+                    </div>
+
+                    <div className="form-group">
+                        <PasswordStrength
+                            id="signup-password"
+                            placeholder="Password"
+                            value={formData.password}
+                            onChange={val => setFormData({ ...formData, password: val })}
+                            disabled={isLogin}
+                            required={!isLogin}
+                            showStrength={true}
+                        />
+                    </div>
+
+                    {error && !isLogin && <p className="form-error">{error}</p>}
+
+                    <button className="form-submit-btn" type="submit" disabled={loading}>
+                        {loading ? 'Processing...' : 'Register Now'}
+                    </button>
+                    
+                    <div className="mobile-switch-text">
+                        Already a member? <span className="mobile-switch-link" onClick={handleToggle}>Log in here</span>
+                    </div>
+                </form>
+
+                <form onSubmit={handleSubmit} className="form signin">
+                    <h2>Sign In</h2>
+                    <div className="form-subtitle">Let the music play!</div>
+                    
+                    <div className="form-group">
+                        <div className="form-input-wrapper">
+                            <FiMail className="form-input-icon" />
+                            <input
+                                className="form-input"
+                                type="email"
+                                placeholder="Email Address"
+                                value={formData.email}
+                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                disabled={!isLogin}
+                                required={isLogin}
+                            />
                         </div>
+                    </div>
 
-                        {error && <p style={{ color: '#ff4757', fontSize: '0.85rem', marginBottom: '15px', padding: '10px', background: 'rgba(255, 71, 87, 0.1)', borderRadius: '8px', borderLeft: '3px solid #ff4757' }}>{error}</p>}
+                    <div className="form-group">
+                        <PasswordStrength
+                            id="signin-password"
+                            placeholder="Password"
+                            value={formData.password}
+                            onChange={val => setFormData({ ...formData, password: val })}
+                            disabled={!isLogin}
+                            required={isLogin}
+                            showStrength={false}
+                        />
+                    </div>
 
-                        <button className="modern-submit-btn" type="submit" disabled={loading}>
-                            {loading ? 'Processing...' : (isLogin ? 'Sign In to Account' : 'Register Now')} <FiArrowRight />
-                        </button>
-                    </form>
+                    {error && isLogin && <p className="form-error">{error}</p>}
 
-                    <p className="auth-switch">
-                        {isLogin ? "Don't have an account?" : "Already a member?"}
-                        <span onClick={() => {
-                            setError('');
-                            setFormData({ name: '', email: '', password: '' });
-                            onSwitchMode(isLogin ? 'register' : 'login');
-                        }}>
-                            {isLogin ? 'Create one now' : 'Log in here'}
-                        </span>
-                    </p>
-                </div>
+                    <button className="form-submit-btn" type="submit" disabled={loading}>
+                        {loading ? 'Processing...' : 'Sign In to Account'}
+                    </button>
+                    
+                    <div className="mobile-switch-text">
+                        Don't have an account? <span className="mobile-switch-link" onClick={handleToggle}>Create one now</span>
+                    </div>
+                </form>
             </div>
         </div>
     );
