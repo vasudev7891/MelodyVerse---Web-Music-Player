@@ -90,7 +90,7 @@ const Search = () => {
 
     if (!query) {
         return (
-            <div className="explore-dashboard" style={{ paddingTop: '100px' }}>
+            <div className="explore-dashboard page-container wide">
                 <div className="explore-header">
                     <h1>Discover New Music</h1>
                     <p>Explore weekly top tracks and trending music from around the world.</p>
@@ -126,7 +126,7 @@ const Search = () => {
     }
 
     return (
-        <div className="search-page" style={{ padding: '100px 32px 32px' }}>
+        <div className="search-page page-container wide">
             <div className="search-results-header" style={{ marginBottom: '32px' }}>
                 <h2>Showing results for &ldquo;{query}&rdquo;</h2>
             </div>

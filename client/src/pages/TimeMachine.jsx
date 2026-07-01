@@ -110,7 +110,7 @@ const TimeMachine = () => {
     const totalSongs = Object.values(memories).reduce((sum, m) => sum + m.songs.length, 0);
 
     return (
-        <div>
+        <div className="page-container wide">
             {/* Time Machine Header */}
             <div className="tm-header">
                 <div className="tm-header-icon">

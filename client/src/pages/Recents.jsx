@@ -38,7 +38,7 @@ const Recents = () => {
     if (loading) return <div className="loader"><div className="spinner"></div></div>;
 
     return (
-        <div>
+        <div className="page-container wide">
             <div className="search-results-header">
                 <h2><FiClock style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Recently Played</h2>
                 <p>{recentlyPlayed.length} songs in your history</p>

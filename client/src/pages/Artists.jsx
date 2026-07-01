@@ -59,7 +59,7 @@ const Artists = () => {
     if (loading) return <div className="loader"><div className="spinner"></div></div>;
 
     return (
-        <div style={{ padding: '40px' }}>
+        <div className="page-container wide">
             <div className="search-results-header">
                 <h1 style={{ fontSize: '42px', fontWeight: 900 }}>Legendary Artists</h1>
                 <p>The greatest voices in musical history, curated for you.</p>

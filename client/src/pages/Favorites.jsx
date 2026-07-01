@@ -52,7 +52,7 @@ const Favorites = () => {
     if (loading) return <div className="loader"><div className="spinner"></div></div>;
 
     return (
-        <div>
+        <div className="page-container wide">
             <div className="search-results-header">
                 <h2>❤️ Your Favorites</h2>
                 <p>{favorites.length} songs saved</p>

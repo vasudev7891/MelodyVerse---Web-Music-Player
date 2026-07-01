@@ -3,7 +3,9 @@ import { FiPlus, FiTrash2, FiMusic } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { getProfile, createPlaylist, deletePlaylist } from '../services/api';
 import { useMusic } from '../context/MusicContext';
+import SongCard from '../components/SongCard';
 import toast from 'react-hot-toast';
+
 
 const Playlists = () => {
     const { user } = useAuth();
@@ -64,7 +66,7 @@ const Playlists = () => {
     if (loading) return <div className="loader"><div className="spinner"></div></div>;
 
     return (
-        <div>
+        <div className="page-container wide">
             <div className="search-results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <h2>🎶 Your Playlists</h2>
@@ -119,15 +121,7 @@ const Playlists = () => {
                             {expandedPlaylist === pl._id && pl.songs?.length > 0 && (
                                 <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
                                     {pl.songs.map((song, j) => (
-                                        <div key={j} className="song-card" onClick={(e) => { e.stopPropagation(); playVideo(song, pl.songs); }} style={{ cursor: 'pointer' }}>
-                                            <div className="song-thumb-container">
-                                                <img className="song-thumb" src={song.thumbnail || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`} alt={song.title} />
-                                            </div>
-                                            <div className="song-info">
-                                                <div className="song-title">{song.title}</div>
-                                                <div className="song-channel">{song.channelTitle}</div>
-                                            </div>
-                                        </div>
+                                        <SongCard key={`${song.videoId}-${j}`} song={song} songList={pl.songs} animDelay={j} />
                                     ))}
                                 </div>
                             )}

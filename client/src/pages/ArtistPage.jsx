@@ -53,7 +53,7 @@ const ArtistPage = () => {
     if (!artist) return <div className="empty-state"><h3>Artist not found</h3></div>;
 
     return (
-        <div>
+        <div className="page-container wide">
             <div className="artist-hero">
                 <img
                     className="artist-hero-img"

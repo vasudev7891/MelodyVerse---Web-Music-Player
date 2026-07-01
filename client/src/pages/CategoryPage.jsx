@@ -40,7 +40,7 @@ const CategoryPage = () => {
     if (loading) return <div className="loader"><div className="spinner"></div></div>;
 
     return (
-        <div style={{ padding: '100px 32px 32px' }}>
+        <div className="page-container wide">
             <div className="search-results-header" style={{ marginBottom: '32px' }}>
                 <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: '36px', fontWeight: 900 }}>
                     🎵 {decodedName}
