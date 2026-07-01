@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiX, FiTv, FiMaximize, FiAirplay, FiSettings, FiSquare, FiMinimize2, FiChevronsRight, FiChevronsLeft, FiShuffle, FiRepeat, FiMove } from 'react-icons/fi';
-import { FaYoutube } from 'react-icons/fa';
+import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiX, FiTv, FiMaximize, FiAirplay, FiSettings, FiSquare, FiMinimize2, FiChevronsRight, FiChevronsLeft, FiShuffle, FiRepeat, FiMove, FiHeart } from 'react-icons/fi';
+import { FaYoutube, FaHeart } from 'react-icons/fa';
 import { useMusic } from '../context/MusicContext';
+import { useAuth } from '../context/AuthContext';
+import { addToFavorites, removeFromFavorites } from '../services/api';
+import toast from 'react-hot-toast';
 
 const MusicPlayer = () => {
     const {
@@ -11,6 +14,35 @@ const MusicPlayer = () => {
         volume, setVolume, setIsPlaying, setProgress, setDuration, progress, duration,
         showVideo, setShowVideo, isTheaterMode, setIsTheaterMode
     } = useMusic();
+    const { user, loadUser } = useAuth();
+
+    const isFavorited = user?.favorites?.some(fav => fav.videoId === currentVideo?.videoId);
+
+    const handlePlayerFavorite = async () => {
+        if (!user) {
+            toast.error('Please login to save favorites');
+            return;
+        }
+        if (!currentVideo) return;
+
+        try {
+            if (isFavorited) {
+                await removeFromFavorites(currentVideo.videoId);
+                toast.success('Removed from favorites');
+            } else {
+                await addToFavorites({
+                    videoId: currentVideo.videoId,
+                    title: currentVideo.title,
+                    thumbnail: currentVideo.thumbnail,
+                    channelTitle: currentVideo.channelTitle
+                });
+                toast.success('Added to favorites! ❤️');
+            }
+            await loadUser();
+        } catch (e) {
+            toast.error('Failed to update favorites');
+        }
+    };
 
     const playerRef = useRef(null);
     const iframeRef = useRef(null);
@@ -363,6 +395,14 @@ const MusicPlayer = () => {
                         <div className="player-track-title">{currentVideo.title}</div>
                         <div className="player-track-artist">{currentVideo.channelTitle}</div>
                     </div>
+                    {/* Toggle Favorite Heart Button */}
+                    <button
+                        className={`player-fav-btn ${isFavorited ? 'is-favorited' : ''}`}
+                        onClick={handlePlayerFavorite}
+                        title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+                    >
+                        {isFavorited ? <FaHeart /> : <FiHeart />}
+                    </button>
                 </div>
 
                 {/* Center Controls */}

@@ -1,14 +1,34 @@
 import { createContext, useContext, useState, useRef, useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import { addToRecentlyPlayed } from '../services/api';
 
 const MusicContext = createContext();
 
 export const useMusic = () => useContext(MusicContext);
 
 export const MusicProvider = ({ children }) => {
+    const { user, loadUser } = useAuth();
     const [currentVideo, setCurrentVideo] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [queue, setQueue] = useState([]);
     const [queueIndex, setQueueIndex] = useState(0);
+
+    // Automatically record to Recently Played on video change
+    useEffect(() => {
+        if (user && currentVideo) {
+            addToRecentlyPlayed({
+                videoId: currentVideo.videoId,
+                title: currentVideo.title,
+                thumbnail: currentVideo.thumbnail,
+                channelTitle: currentVideo.channelTitle
+            })
+            .then(() => {
+                // Sync user profile state globally
+                loadUser();
+            })
+            .catch(err => console.error('Failed to save to recently played:', err));
+        }
+    }, [currentVideo, user]);
     const [showPlayer, setShowPlayer] = useState(false);
     const [showAIAssistant, setShowAIAssistant] = useState(false);
     const [showMoodCamera, setShowMoodCamera] = useState(false);

@@ -1,26 +1,19 @@
 import { FiPlay, FiHeart } from 'react-icons/fi';
+import { FaHeart } from 'react-icons/fa';
 import { useMusic } from '../context/MusicContext';
 import { useAuth } from '../context/AuthContext';
-import { addToFavorites, addToRecentlyPlayed } from '../services/api';
+import { addToFavorites, removeFromFavorites } from '../services/api';
 import toast from 'react-hot-toast';
 
 const SongCard = ({ song, songList = [], animDelay = 0 }) => {
     const { playVideo } = useMusic();
-    const { user } = useAuth();
+    const { user, loadUser } = useAuth();
 
-    const handlePlay = async () => {
+    const handlePlay = () => {
         playVideo(song, songList);
-        if (user) {
-            try {
-                await addToRecentlyPlayed({
-                    videoId: song.videoId,
-                    title: song.title,
-                    thumbnail: song.thumbnail,
-                    channelTitle: song.channelTitle
-                });
-            } catch (e) { }
-        }
     };
+
+    const isFavorited = user?.favorites?.some(fav => fav.videoId === song.videoId);
 
     const handleFavorite = async (e) => {
         e.stopPropagation();
@@ -28,16 +21,24 @@ const SongCard = ({ song, songList = [], animDelay = 0 }) => {
             toast.error('Please login to save favorites');
             return;
         }
+
         try {
-            await addToFavorites({
-                videoId: song.videoId,
-                title: song.title,
-                thumbnail: song.thumbnail,
-                channelTitle: song.channelTitle
-            });
-            toast.success('Added to favorites! ❤️');
+            if (isFavorited) {
+                await removeFromFavorites(song.videoId);
+                toast.success('Removed from favorites');
+            } else {
+                await addToFavorites({
+                    videoId: song.videoId,
+                    title: song.title,
+                    thumbnail: song.thumbnail,
+                    channelTitle: song.channelTitle
+                });
+                toast.success('Added to favorites! ❤️');
+            }
+            // Reload user data to synchronize favorite state
+            await loadUser();
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Already in favorites');
+            toast.error(err.response?.data?.message || 'Action failed');
         }
     };
 
@@ -54,6 +55,16 @@ const SongCard = ({ song, songList = [], animDelay = 0 }) => {
                     alt={song.title}
                     loading="lazy"
                 />
+                
+                {/* Floating Heart Button */}
+                <button
+                    className={`song-fav-btn ${isFavorited ? 'is-favorited' : ''}`}
+                    onClick={handleFavorite}
+                    title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+                >
+                    {isFavorited ? <FaHeart /> : <FiHeart />}
+                </button>
+
                 <div className="song-play-btn-overlay">
                     <FiPlay />
                 </div>
