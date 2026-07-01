@@ -18,10 +18,8 @@ const TopNavbar = ({ onToggleSidebar }) => {
     const { setShowAIAssistant, setShowMoodCamera, showAIAssistant, showMoodCamera, playVideo } = useMusic();
     const [searchQuery, setSearchQuery] = useState('');
     const [showUserMenu, setShowUserMenu] = useState(false);
-    const [showAuthModal, setShowAuthModal] = useState(false);
-    const [authMode, setAuthMode] = useState('login');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const { user, logout } = useAuth();
+    const { user, logout, showAuthModal, setShowAuthModal, authMode, setAuthMode } = useAuth();
     const navigate = useNavigate();
     const [showDropdown, setShowDropdown] = useState(false);
     const [textSuggestions, setTextSuggestions] = useState([]);

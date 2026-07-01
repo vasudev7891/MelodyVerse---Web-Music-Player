@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import SongCard from '../components/SongCard';
 
 const Favorites = () => {
-    const { user, loadUser } = useAuth();
+    const { user, loadUser, setShowAuthModal, setAuthMode } = useAuth();
     const [favorites, setFavorites] = useState([]);
     const [recentlyPlayed, setRecentlyPlayed] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -41,10 +41,18 @@ const Favorites = () => {
 
     if (!user) {
         return (
-            <div className="empty-state">
-                <div className="empty-icon">🔒</div>
-                <h3>Login Required</h3>
-                <p>Please login to view your favorites</p>
+            <div className="page-container wide">
+                <div className="empty-state animate-in">
+                    <div className="empty-icon-wrapper">
+                        <div className="empty-icon-glow"></div>
+                        <span className="empty-icon">🔒</span>
+                    </div>
+                    <h3>Login Required</h3>
+                    <p>Please login to view your favorites</p>
+                    <button className="premium-play-btn empty-btn" onClick={() => { setAuthMode('login'); setShowAuthModal(true); }}>
+                        Sign In
+                    </button>
+                </div>
             </div>
         );
     }

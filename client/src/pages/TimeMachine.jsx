@@ -5,7 +5,7 @@ import { useMusic } from '../context/MusicContext';
 import { getProfile } from '../services/api';
 
 const TimeMachine = () => {
-    const { user } = useAuth();
+    const { user, setShowAuthModal, setAuthMode } = useAuth();
     const { playVideo } = useMusic();
     const [memories, setMemories] = useState({});
     const [loading, setLoading] = useState(true);
@@ -97,10 +97,18 @@ const TimeMachine = () => {
 
     if (!user) {
         return (
-            <div className="empty-state">
-                <div className="empty-icon">🔒</div>
-                <h3>Login Required</h3>
-                <p>Sign in to see your music time machine</p>
+            <div className="page-container wide">
+                <div className="empty-state animate-in">
+                    <div className="empty-icon-wrapper">
+                        <div className="empty-icon-glow"></div>
+                        <span className="empty-icon">🔒</span>
+                    </div>
+                    <h3>Login Required</h3>
+                    <p>Sign in to see your music time machine</p>
+                    <button className="premium-play-btn empty-btn" onClick={() => { setAuthMode('login'); setShowAuthModal(true); }}>
+                        Sign In
+                    </button>
+                </div>
             </div>
         );
     }

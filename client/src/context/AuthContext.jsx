@@ -57,8 +57,11 @@ export const AuthProvider = ({ children }) => {
         setUser(updatedUser);
     };
 
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authMode, setAuthMode] = useState('login');
+
     return (
-        <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateUser, loadUser }}>
+        <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateUser, loadUser, showAuthModal, setShowAuthModal, authMode, setAuthMode }}>
             {children}
         </AuthContext.Provider>
     );
