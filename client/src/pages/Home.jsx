@@ -320,7 +320,6 @@ const Home = () => {
                     <div className="categories-grid">
                         {categories.map((cat, i) => (
                             <div key={cat._id} className="category-card animate-in" style={{ animationDelay: `${i * 0.05}s`, background: `linear-gradient(135deg, ${cat.color}22, ${cat.color}08)`, color: cat.color }} onClick={() => navigate(`/category/${encodeURIComponent(cat.name)}`)}>
-                                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: cat.color, opacity: 0.06 }}></div>
                                 <div className="category-emoji">{cat.image}</div>
                                 <div className="category-name">{cat.name}</div>
                                 <div className="category-desc">{cat.description}</div>
