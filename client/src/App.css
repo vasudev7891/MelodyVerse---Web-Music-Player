@@ -342,8 +342,8 @@
   width: 380px;
   height: calc(100vh - 228px);
   background: rgba(13, 13, 22, 0.6);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: var(--glass-filter-chat);
+  backdrop-filter: var(--glass-filter-chat);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-lg);
   display: flex;

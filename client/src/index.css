@@ -25,6 +25,9 @@
   --radius-xl: 28px;
   --gradient: linear-gradient(135deg, #7c4dff, #b388ff, #ff4081);
   --slider-track: rgba(255, 255, 255, 0.15);
+  --glass-filter: blur(35px) saturate(180%);
+  --glass-filter-chat: blur(40px) saturate(180%);
+  --glass-filter-dropdown: blur(30px) saturate(180%);
 }
 
 * {
@@ -372,8 +375,8 @@ body::before {
   right: 24px;
   height: 72px;
   background: rgba(13, 13, 22, 0.55);
-  backdrop-filter: blur(35px) saturate(180%);
-  -webkit-backdrop-filter: blur(35px) saturate(180%);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
   box-shadow:
@@ -1227,8 +1230,8 @@ body::before {
   height: 96px;
   /* Deep multi-layer shadow for elevation effect */
   background: rgba(13, 13, 22, 0.55);
-  backdrop-filter: blur(35px) saturate(180%);
-  -webkit-backdrop-filter: blur(35px) saturate(180%);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
   /* Glowing border */
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-lg);
@@ -1856,8 +1859,8 @@ body::before {
     border: none !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     background: rgba(13, 13, 22, 0.55) !important;
-    backdrop-filter: blur(35px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+    -webkit-backdrop-filter: var(--glass-filter) !important;
+    backdrop-filter: var(--glass-filter) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
     height: auto !important;
     padding: 16px 20px !important;
@@ -1922,8 +1925,8 @@ body::before {
   left: 0;
   right: 0;
   background: rgba(13, 13, 22, 0.85);
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: var(--glass-filter-dropdown);
+  backdrop-filter: var(--glass-filter-dropdown);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
