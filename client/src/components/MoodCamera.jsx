@@ -285,133 +285,140 @@ const MoodCamera = () => {
                 <div className="modern-auth-overlay" onClick={() => setIsOpen(false)}>
                     <style>{`
                         .modern-auth-overlay {
-                            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+                            position: fixed; inset: 0; background: rgba(4, 4, 8, 0.7); backdrop-filter: blur(25px);
                             display: flex; align-items: center; justify-content: center; z-index: 100000;
                         }
                         .modern-close-btn {
-                            width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1);
-                            border: none; color: white; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;
-                            cursor: pointer; transition: 0.2s;
+                            width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.06);
+                            border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+                            cursor: pointer; transition: all 0.3s ease;
                         }
-                        .modern-close-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
+                        .modern-close-btn:hover { background: rgba(255, 71, 87, 0.2); color: #ff4757; transform: rotate(90deg) scale(1.05); }
                         
                         .mood-split-container {
                             display: flex; width: 950px; height: 600px; max-width: 90vw; max-height: 90vh;
-                            background: rgba(13, 13, 18, 0.95); border-radius: 24px;
-                            border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+                            background: rgba(13, 13, 22, 0.6); border-radius: var(--radius-lg);
+                            border: 1px solid rgba(255, 255, 255, 0.08); 
+                            box-shadow: 
+                                0 30px 70px rgba(0, 0, 0, 0.7), 
+                                0 0 40px rgba(124, 77, 255, 0.18), 
+                                0 0 0 1px rgba(255, 255, 255, 0.05);
                             overflow: hidden; position: relative;
                             transform: scale(0.95); animation: scaleUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
                         }
                         
                         .mood-info-side {
-                            flex: 0 0 380px; background: linear-gradient(135deg, rgba(45, 52, 54, 0.9), rgba(9, 132, 227, 0.8)), url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop');
+                            flex: 0 0 380px; background: linear-gradient(135deg, rgba(13, 13, 22, 0.8), rgba(124, 77, 255, 0.6)), url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop');
                             background-size: cover; background-position: center; position: relative;
                             padding: 50px 40px; color: white; display: flex; flex-direction: column; justify-content: center;
                         }
                         .mood-info-side::after {
-                            content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(13,13,18,0.3), rgba(13,13,18,0.95)); z-index: 1;
+                            content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(13,13,22,0.1), rgba(13,13,22,0.95)); z-index: 1;
                         }
                         .mood-info-content { position: relative; z-index: 10; }
                         
                         .mood-camera-side {
                             flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; position: relative;
                             overflow-y: auto; overflow-x: hidden;
+                            background: rgba(13, 13, 22, 0.2);
                         }
                         .mood-camera-side::-webkit-scrollbar { width: 6px; }
-                        .mood-camera-side::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+                        .mood-camera-side::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 10px; }
                         
                         .mood-instructions { margin-top: 30px; display: flex; flex-direction: column; gap: 20px; }
                         .mood-step { display: flex; gap: 15px; align-items: flex-start; }
-                        .mood-step-num { width: 28px; height: 28px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; color: #74b9ff; }
-                        .mood-step-text h4 { margin: 0 0 5px 0; font-size: 1.1rem; color: white; }
-                        .mood-step-text p { margin: 0; font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.4; }
+                        .mood-step-num { width: 28px; height: 28px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; color: #ff4081; box-shadow: 0 0 10px rgba(255, 64, 129, 0.2); }
+                        .mood-step-text h4 { margin: 0 0 5px 0; font-size: 1.1rem; color: white; font-family: 'Outfit', sans-serif; }
+                        .mood-step-text p { margin: 0; font-size: 0.85rem; color: rgba(255,255,255,0.65); line-height: 1.4; }
                         
                         .camera-frame {
-                            width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 20px; overflow: hidden;
-                            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.05);
+                            width: 100%; aspect-ratio: 4/3; background: #000; border-radius: var(--radius-md); overflow: hidden;
+                            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.08);
                         }
                         .camera-frame video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
                         
                         .scanner-line {
-                            position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: #00cec9;
-                            box-shadow: 0 0 15px #00cec9, 0 0 30px #00cec9;
+                            position: absolute; top: 0; left: 0; width: 100%; height: 3px; 
+                            background: linear-gradient(90deg, transparent, #ff4081, #7c4dff, #ff4081, transparent);
+                            box-shadow: 0 0 15px #ff4081, 0 0 30px #7c4dff;
                             animation: scanAnim 2s infinite linear; z-index: 10; opacity: 0.8;
                         }
                         @keyframes scanAnim { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
                         
                         .modern-mood-btn {
-                            width: 100%; padding: 18px; border-radius: 16px; border: none; background: linear-gradient(135deg, #0984e3, #00cec9);
-                            color: white; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 16px; cursor: pointer;
-                            display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; margin-top: 30px; box-shadow: 0 10px 25px rgba(9, 132, 227, 0.3);
+                            width: 100%; padding: 16px; border-radius: var(--radius-md); border: none; background: var(--gradient);
+                            color: white; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; cursor: pointer;
+                            display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; margin-top: 30px; 
+                            box-shadow: 0 8px 24px var(--accent-glow);
                         }
-                        .modern-mood-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(9, 132, 227, 0.4); }
-                        .modern-mood-btn.rescan { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); box-shadow: none; margin-top: 10px; }
-                        .modern-mood-btn.rescan:hover { background: rgba(255,255,255,0.1); }
+                        .modern-mood-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(124, 77, 255, 0.4); }
+                        .modern-mood-btn.rescan { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); box-shadow: none; margin-top: 10px; }
+                        .modern-mood-btn.rescan:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
                         
                         .mood-result-card {
-                            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+                            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: var(--radius-md);
                             padding: 25px; width: 100%; backdrop-filter: blur(10px); animation: fadeIn 0.5s ease;
                         }
                         
                         .song-suggestion-card {
-                            display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.3); padding: 10px;
-                            border-radius: 12px; margin-top: 10px; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
+                            display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.02); padding: 12px;
+                            border-radius: var(--radius-md); margin-top: 10px; cursor: pointer; transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.04);
                         }
-                        .song-suggestion-card:hover { background: rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.1); transform: translateX(5px); }
-                        .song-suggestion-card img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+                        .song-suggestion-card:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.08); transform: translateX(6px); }
+                        .song-suggestion-card img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
                         
                         .spin-icon { animation: spin 1s linear infinite; }
                         @keyframes spin { to { transform: rotate(360deg); } }
-
+ 
                         .neural-overlay {
-                            position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 30%, rgba(0, 206, 201, 0.1) 100%);
+                            position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 30%, rgba(124, 77, 255, 0.06) 100%);
                             z-index: 15; pointer-events: none;
                         }
-
+ 
                         .scanning-hud {
-                            position: absolute; inset: 0; border: 2px solid #00cec9; border-radius: 20px;
-                            box-shadow: inset 0 0 50px rgba(0, 206, 201, 0.2); z-index: 16; pointer-events: none;
+                            position: absolute; inset: 0; border: 2px solid #7c4dff; border-radius: var(--radius-md);
+                            box-shadow: inset 0 0 50px rgba(124, 77, 255, 0.15); z-index: 16; pointer-events: none;
                             animation: hudPulse 2s infinite ease-in-out;
                         }
-
+ 
                         .scanning-grid {
                             position: absolute; inset: 0; background-image: 
-                                linear-gradient(rgba(0, 206, 201, 0.1) 1px, transparent 1px),
-                                linear-gradient(90deg, rgba(0, 206, 201, 0.1) 1px, transparent 1px);
+                                linear-gradient(rgba(124, 77, 255, 0.08) 1px, transparent 1px),
+                                linear-gradient(90deg, rgba(124, 77, 255, 0.08) 1px, transparent 1px);
                             background-size: 30px 30px; z-index: 12; opacity: 0.3; pointer-events: none;
                         }
-
+ 
                         .scanning-status-card {
                             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-                            background: rgba(0,0,0,0.8); backdrop-filter: blur(12px); padding: 12px 24px;
-                            border-radius: 50px; border: 1px solid rgba(0, 206, 201, 0.5);
+                            background: rgba(13, 13, 22, 0.85); backdrop-filter: blur(12px); padding: 12px 24px;
+                            border-radius: 50px; border: 1px solid rgba(124, 77, 255, 0.4);
                             display: flex; align-items: center; gap: 12px; z-index: 30;
-                            color: #00cec9; font-weight: 600; font-size: 0.9rem; letter-spacing: 0.5px;
-                            box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: max-content;
+                            color: #ff4081; font-weight: 600; font-size: 0.9rem; letter-spacing: 0.5px;
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 15px rgba(124, 77, 255, 0.3); width: max-content;
                         }
-
+ 
                         .thinking-dot {
-                            width: 8px; height: 8px; background: #00cec9; border-radius: 50%;
+                            width: 8px; height: 8px; background: #ff4081; border-radius: 50%;
                             animation: dotPulse 1.5s infinite ease-in-out;
                         }
-
+ 
                         @keyframes dotPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
-
+ 
                         @keyframes scaleUp {
                             from { transform: scale(0.95); opacity: 0; }
                             to { transform: scale(1); opacity: 1; }
                         }
-
+ 
                         @keyframes fadeIn {
                             from { opacity: 0; transform: translateY(10px); }
                             to { opacity: 1; transform: translateY(0); }
                         }
-
+ 
                         @keyframes hudPulse {
-                            0%, 100% { box-shadow: inset 0 0 50px rgba(0, 206, 201, 0.2); border-color: #00cec9; }
-                            50% { box-shadow: inset 0 0 80px rgba(0, 206, 201, 0.4); border-color: #55efc4; }
+                            0%, 100% { box-shadow: inset 0 0 50px rgba(124, 77, 255, 0.15); border-color: #7c4dff; }
+                            50% { box-shadow: inset 0 0 80px rgba(124, 77, 255, 0.35); border-color: #ff4081; }
                         }
-
+ 
                         @media (max-width: 768px) {
                             .mood-split-container {
                                 flex-direction: column !important;

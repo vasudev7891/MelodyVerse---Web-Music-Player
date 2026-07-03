@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { FiMonitor, FiMoon, FiSun, FiVolume2, FiBell, FiShield, FiType } from 'react-icons/fi';
+import { useTheme } from '../context/ThemeContext';
 
 const Settings = () => {
+    const { theme, toggleTheme } = useTheme();
     const [autoplay, setAutoplay] = useState(true);
     const [quality, setQuality] = useState('auto');
     const [notifications, setNotifications] = useState(true);
@@ -38,6 +40,58 @@ const Settings = () => {
                             <option value="720p">720p</option>
                             <option value="480p">480p</option>
                         </select>
+                    </div>
+                </div>
+
+                {/* Appearance Settings */}
+                <div className="page-card">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(124, 77, 255, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}><FiSun size={20} /></div>
+                        <h2 style={{ fontSize: '1.4rem' }}>Appearance</h2>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 0' }}>
+                        <div>
+                            <div style={{ fontWeight: '600', fontSize: '1.1rem', marginBottom: '5px' }}>Theme Mode</div>
+                            <div style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>Choose your visual style for the interface.</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button 
+                                onClick={() => theme === 'dark' && toggleTheme()} 
+                                style={{
+                                    padding: '8px 16px',
+                                    background: theme === 'light' ? 'var(--accent)' : 'var(--bg-dark)',
+                                    border: '1px solid var(--border)',
+                                    color: theme === 'light' ? 'white' : 'var(--text-main)',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontWeight: '600',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <FiSun /> Light
+                            </button>
+                            <button 
+                                onClick={() => theme === 'light' && toggleTheme()} 
+                                style={{
+                                    padding: '8px 16px',
+                                    background: theme === 'dark' ? 'var(--accent)' : 'var(--bg-dark)',
+                                    border: '1px solid var(--border)',
+                                    color: theme === 'dark' ? 'white' : 'var(--text-main)',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontWeight: '600',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <FiMoon /> Dark
+                            </button>
+                        </div>
                     </div>
                 </div>
 

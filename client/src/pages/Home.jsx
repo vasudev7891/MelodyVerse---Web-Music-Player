@@ -5,6 +5,7 @@ import SongCard from '../components/SongCard';
 import { getFeaturedArtists, getCategories, getTrending, searchMusic } from '../services/api';
 import { searchResultsCache, trendingCache } from '../utils/searchCache';
 import { useMusic } from '../context/MusicContext';
+import { useTheme } from '../context/ThemeContext';
 import { LEGENDARY_ARTISTS, INDIAN_LEGENDS, MODERN_STARS, INTERNATIONAL_ICONS } from '../constants/artists';
 
 const MOODS = [
@@ -43,6 +44,7 @@ const Home = () => {
     const [carouselIndex, setCarouselIndex] = useState(0);
     const navigate = useNavigate();
     const { playVideo } = useMusic();
+    const { theme } = useTheme();
     const carouselRef = useRef(null);
 
     useEffect(() => {
@@ -117,7 +119,9 @@ const Home = () => {
         <div className="home-fullwidth">
             {/* ===== PREMIUM HERO ===== */}
             <div className="fw-hero-premium" style={{
-                backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url('/hero-bg.png')`,
+                backgroundImage: theme === 'light'
+                    ? `linear-gradient(rgba(245, 246, 250, 0.15), rgba(245, 246, 250, 0.75)), url('/hero-bg.png')`
+                    : `linear-gradient(rgba(6, 6, 12, 0.25), rgba(6, 6, 12, 0.75)), url('/hero-bg.png')`,
             }}>
                 <div className="fw-hero-glow"></div>
 

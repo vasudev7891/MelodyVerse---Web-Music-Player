@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { FiSearch, FiLogOut, FiShield, FiMenu, FiX, FiClock, FiHeart, FiCamera, FiMessageCircle, FiTrendingUp } from 'react-icons/fi';
+import { FiSearch, FiLogOut, FiShield, FiMenu, FiX, FiClock, FiHeart, FiCamera, FiMessageCircle, FiTrendingUp, FiSun, FiMoon } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useMusic } from '../context/MusicContext';
+import { useTheme } from '../context/ThemeContext';
 import AuthModal from './AuthModal';
 import { searchMusic } from '../services/api';
 import { suggestionsCache } from '../utils/searchCache';
@@ -16,6 +17,7 @@ const STATIC_SUGGESTIONS = [
 
 const TopNavbar = ({ onToggleSidebar }) => {
     const { setShowAIAssistant, setShowMoodCamera, showAIAssistant, showMoodCamera, playVideo } = useMusic();
+    const { theme, toggleTheme } = useTheme();
     const [searchQuery, setSearchQuery] = useState('');
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -301,6 +303,15 @@ const TopNavbar = ({ onToggleSidebar }) => {
                                 <FiMessageCircle />
                             </button>
                         </div>
+
+                        {/* Theme Toggle */}
+                        <button
+                            className="top-nav-btn theme-toggle-btn"
+                            onClick={toggleTheme}
+                            title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+                        >
+                            {theme === 'light' ? <FiMoon /> : <FiSun />}
+                        </button>
 
                         {/* Auth */}
                         <div className="top-nav-auth">

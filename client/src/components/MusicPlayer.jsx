@@ -64,6 +64,62 @@ const MusicPlayer = () => {
     const isDragging = useRef(false);
     const dragOffset = useRef({ x: 0, y: 0 });
 
+    // ─── Swipe-to-dismiss for Mobile Player ────────────────────────────────────
+    const musicPlayerRef = useRef(null);
+    const touchStartY = useRef(0);
+    const touchMoveY = useRef(0);
+
+    useEffect(() => {
+        if (musicPlayerRef.current) {
+            musicPlayerRef.current.style.transform = 'translateY(0)';
+            musicPlayerRef.current.style.transition = '';
+        }
+    }, [currentVideo]);
+
+    const handleTouchStart = (e) => {
+        if (window.innerWidth > 768) return;
+        touchStartY.current = e.touches[0].clientY;
+        touchMoveY.current = 0;
+        if (musicPlayerRef.current) {
+            musicPlayerRef.current.style.transition = 'none';
+        }
+    };
+
+    const handleTouchMove = (e) => {
+        if (window.innerWidth > 768) return;
+        const currentY = e.touches[0].clientY;
+        const diffY = currentY - touchStartY.current;
+        
+        if (diffY > 0) {
+            touchMoveY.current = diffY;
+            if (musicPlayerRef.current) {
+                musicPlayerRef.current.style.transform = `translateY(${diffY}px)`;
+            }
+        }
+    };
+
+    const handleTouchEnd = () => {
+        if (window.innerWidth > 768) return;
+        const diffY = touchMoveY.current;
+        
+        if (musicPlayerRef.current) {
+            musicPlayerRef.current.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        }
+
+        if (diffY > 100) {
+            if (musicPlayerRef.current) {
+                musicPlayerRef.current.style.transform = 'translateY(200px)';
+            }
+            setTimeout(() => {
+                closePlayer();
+            }, 250);
+        } else {
+            if (musicPlayerRef.current) {
+                musicPlayerRef.current.style.transform = 'translateY(0)';
+            }
+        }
+    };
+
     // ─── Global Keyboard Shortcuts ─────────────────────────────────────────────
     const handleKeyDown = useCallback((e) => {
         // Don't intercept when user is typing in an input/textarea
@@ -380,7 +436,13 @@ const MusicPlayer = () => {
             {videoPortal}
 
             {/* Bottom player bar */}
-            <div className="music-player">
+            <div 
+                ref={musicPlayerRef}
+                className="music-player"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+            >
                 {/* Track Info */}
                 <div className="player-track-info">
                     <div className={`player-thumb-wrapper ${isPlaying ? 'is-playing' : ''}`}>
@@ -447,7 +509,7 @@ const MusicPlayer = () => {
                             value={volume}
                             onChange={e => setVolume(Number(e.target.value))}
                             style={{
-                                background: `linear-gradient(to right, #6c5ce7 0%, #a29bfe ${volume/2}%, #fd79a8 ${volume}%, rgba(255, 255, 255, 0.15) ${volume}%)`
+                                background: `linear-gradient(to right, #7c4dff 0%, #ff4081 ${volume}%, var(--slider-track) ${volume}%)`
                             }}
                         />
                     </div>
